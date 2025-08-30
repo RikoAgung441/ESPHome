@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="../index.css">
+  </head>
+
+  <body>
+    <nav class="navbar">
+      <a href="../index.html" class="btn_back"><img class="icon"
+          src="../asset/back.svg" alt="back"></a>
+      <h1>Setup wifi</h1>
+    </nav>
+    <div class="container">
+      <div class="information">
+        <p>Wifi name : <span id="wifi_name"></span></p>
+        <p>Wifi password : <span id="wifi_password"></span></p>
+        <p>Wifi status : <span id="wifi_status"></span></p>
+        <p>Wifi ip : <span id="wifi_ip"></span></p>
+      </div>
+      <form action="" class="wifi_form">
+        <div class="container_field_form">
+          <label for="SSID">SSID</label>
+          <input type="text" id="SSID" placeholder="Enter your wifi name">
+        </div>
+        <div class="container_field_form">
+          <label for="wifi_password">Password</label>
+          <div class="container_input">
+            <input type="password" id="wifi_password"
+              placeholder="Enter your wifi name">
+            <img class="input_icon_eye icon" src="../asset/eye-off.svg"
+              alt="eye">
+          </div>
+        </div>
+        <button type="submit">Submit</button>
+      </form>
+    </div>
+    <script src="../index.js"></script>
+  </body>
+
+</html>
