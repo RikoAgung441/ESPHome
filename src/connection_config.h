@@ -10,4 +10,6 @@ void handleSave();
 String wifiManagerGetIP();
 String ap_ssid, ap_password;
 
+extern DNSServer dnsServer;
+
 #endif //CONNECTION_CONFIG

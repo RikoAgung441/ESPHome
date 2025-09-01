@@ -21,24 +21,27 @@
         <p>Wifi status : <span id="wifi_status"></span></p>
         <p>Wifi ip : <span id="wifi_ip"></span></p>
       </div>
-      <form action="" class="wifi_form">
-        <div class="container_field_form">
-          <label for="SSID">SSID</label>
+      <div class="container_field_form">
+        <label for="SSID">SSID</label>
+        <div class="container_field_input">
           <input type="text" id="SSID" placeholder="Enter your wifi name">
+          <button type="button" class="btn_set" id="btn_set_ssid">Set</button>
         </div>
-        <div class="container_field_form">
-          <label for="wifi_password">Password</label>
+      </div>
+      <div class="container_field_form">
+        <label for="input_wifi_password">Password</label>
+        <div class="container_field_input">
           <div class="container_input">
-            <input type="password" id="wifi_password"
+            <input type="password" id="input_wifi_password"
               placeholder="Enter your wifi name">
             <img class="input_icon_eye icon" src="../asset/eye-off.svg"
               alt="eye">
           </div>
+          <button type="button" class="btn_set">Set</button>
         </div>
-        <button type="submit">Submit</button>
-      </form>
+      </div>
     </div>
-    <script src="../index.js"></script>
+    <script src="./wifi_config.js"></script>
   </body>
 
 </html>

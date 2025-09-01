@@ -22,8 +22,11 @@ void webServerInit() {
 
   server.on("/", HTTP_GET, handleRoot);
 
-  server.on("/ip", HTTP_GET, []() {
-    server.send(200, "text/plain", wifiManagerGetIP());
+
+  server.on("/wifi_configuration", HTTP_GET, []() {
+  File file = SPIFFS.open("/pages/wifi_configuration.html", "r");
+  server.streamFile(file, "text/html");
+  file.close();
   });
 
   server.onNotFound(handleNotFound);

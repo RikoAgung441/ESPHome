@@ -52,8 +52,10 @@ void setup() {
 void loop() {
   // Jalankan web server
   if (apModeActive) {
+    dnsServer.processNextRequest();
     webServerHandleClient();
   }
+  
 
   // Reset ke default jika tombol > 5 detik
   if (buttonHeld && (millis() - buttonPressTime > 5000)) {

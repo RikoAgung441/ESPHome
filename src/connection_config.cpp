@@ -2,6 +2,10 @@
 #include "preferences_manager.h"
 #include "server_manager.h"
 #include "connection_config.h"
+#include <DNSServer.h>
+
+const byte DNS_PORT = 53;
+DNSServer dnsServer;
 
 void connectionInit(){
   preferences.begin("ap-config", true);
@@ -19,11 +23,13 @@ void connectionInit(){
     Serial.println("❌ Gagal start AP, fallback ke default");
     WiFi.softAP("ESP32_Default", "12345678");
   }
-  startAPMode();
+  // startAPMode();
   Serial.print("✅ AP Aktif: ");
   Serial.println(ap_ssid);
   Serial.print("IP: ");
   Serial.println(WiFi.softAPIP());
+
+  dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());
 }
 
 void startAPMode(){
