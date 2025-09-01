@@ -13,9 +13,18 @@ buttonEye.addEventListener("click", () => {
 
 const fields = document.querySelectorAll(".container_field_form")
 fields.forEach((field) => {
-	field.querySelector(".btn_set").addEventListener("click", () => {
-		console.log(field.querySelector("label").textContent)
-		console.log(field.querySelector("input").value)
+	field.querySelector(".btn_set").addEventListener("click", async () => {
+		const id = field.querySelector("input").id
+		const value = field.querySelector("input").value
+
+		const res = await fetch("/api/savewifi", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ id, value }),
+		})
+
+		const data = await res.json()
+		console.log(data)
 	})
 })
 

@@ -9,5 +9,6 @@ extern WebServer server;
 
 void webServerInit();
 void webServerHandleClient();
+void sendJSON(int code, const String &json);
 
 #endif //SERVER_MANAGER

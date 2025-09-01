@@ -31,12 +31,17 @@ void webServerInit() {
 
   server.onNotFound(handleNotFound);
 
+  server.on("/save", HTTP_POST, handleSave);
   server.begin();
   Serial.println("Web server started!");
-    // server.on("/save", HTTP_POST, handleSave);
   // server.begin();
   
 }
+
+void sendJSON(int code, const String &json) {
+  server.send(code, "application/json", json);
+}
+
 
 void webServerHandleClient() {
   server.handleClient();

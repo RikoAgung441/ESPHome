@@ -2,10 +2,12 @@
 #include "preferences_manager.h"
 #include "server_manager.h"
 #include "connection_config.h"
-#include <DNSServer.h>
 
 const byte DNS_PORT = 53;
 DNSServer dnsServer;
+
+String ap_ssid = "ESP32_Default";
+String ap_password = "12345678";
 
 void connectionInit(){
   preferences.begin("ap-config", true);
@@ -56,40 +58,38 @@ void resetToDefault(){
 }
 
 void handleSave(){
-  if (server.hasArg("ssid") && server.hasArg("password") && server.hasArg("oldpass")) {
-    String newSSID = server.arg("ssid");
-    String newPass = server.arg("password");
-    String oldPass = server.arg("oldpass");
-
-    // Validasi password lama
-    if (oldPass == ap_password) {
-      // Simpan ke NVS
-      preferences.begin("ap-config", false);
-      preferences.putString("ssid", newSSID);
-      preferences.putString("password", newPass);
-      preferences.end();
-
-      // Update variabel global
-      ap_ssid = newSSID;
-      ap_password = newPass;
-
-      // Restart AP dengan SSID & Password baru TANPA reboot
-      // WiFi.softAP(ap_ssid.c_str(), ap_password.c_str());
-      // WiFi.softAPdisconnect(true);
-      // delay(500);
-
-      //set flag untuk restart
-      // pendingRestart = true;
-      // restartAt = millis() + 3000;
-
-      // String msg = "<h1>Data berhasil disimpan!</h1>"
-      //              "<p>Silakan hubungkan ke SSID baru: <b>" + ap_ssid + "</b></p>";
-      // server.send(200, "text/html", msg);
-    } else {
-      // String msg = "<h1>Password salah!</h1>";
-      // server.send(200, "text/html", msg);
-    }
+  Serial.println("🔄 Menyimpan config...");
+  if (server.method() != HTTP_POST) {
+    sendJSON(405, "{\"error\":\"Method Not Allowed\"}");
+    return;
   }
+  if (!server.hasArg("plain")) {
+    sendJSON(400, "{\"error\":\"No body\"}");
+    return;
+  }
+
+  String body = server.arg("plain");
+  int ssidPos = body.indexOf("\"ssid\"");
+  int passPos = body.indexOf("\"pass\"");
+  if (ssidPos < 0 || passPos < 0) {
+    sendJSON(400, "{\"error\":\"Invalid JSON\"}");
+    return;
+  }
+
+  auto extract = [&](const String& key)->String {
+    int k = body.indexOf("\"" + key + "\"");
+    int colon = body.indexOf(":", k);
+    int firstQuote = body.indexOf("\"", colon + 1);
+    int secondQuote = body.indexOf("\"", firstQuote + 1);
+    if (k < 0 || colon < 0 || firstQuote < 0 || secondQuote < 0) return String("");
+    return body.substring(firstQuote + 1, secondQuote);
+  };
+
+  String ssid = extract("ssid");
+  String pass = extract("pass");
+
+  Serial.println("SSID: " + ssid);
+  Serial.println("PASS: " + pass);
 }
 
 String wifiManagerGetIP() {
