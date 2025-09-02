@@ -6,7 +6,7 @@
 WebServer server(80);
 
 void handleRoot() {
-  File file = SPIFFS.open("/index.html", "r");
+  File file = SPIFFS.open("/index.html", "r");\
   server.streamFile(file, "text/html");
   file.close();
 }

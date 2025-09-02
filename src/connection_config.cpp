@@ -90,6 +90,9 @@ void handleSave(){
 
   Serial.println("SSID: " + ssid);
   Serial.println("PASS: " + pass);
+
+  sendJSON(200, "{\"ok\":true,\"message\":\"WiFi disimpan, device akan restart...\"}");
+  delay(500);
 }
 
 String wifiManagerGetIP() {
