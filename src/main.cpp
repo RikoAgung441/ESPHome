@@ -51,10 +51,9 @@ void setup() {
 // ====== Loop ======
 void loop() {
   // Jalankan web server
-  if (apModeActive) {
     dnsServer.processNextRequest();
     webServerHandleClient();
-  }
+  
   
 
   // Reset ke default jika tombol > 5 detik
