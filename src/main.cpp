@@ -51,7 +51,6 @@ void setup() {
 void loop() {
   // Jalankan web server
   dnsServer.processNextRequest();
-  webServerHandleClient();
 
   
 
