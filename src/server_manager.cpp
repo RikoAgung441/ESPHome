@@ -4,7 +4,7 @@
 #include "connection_config.h"
 
 WebServer server(80);
-
+gitt
 void listSPIFFSFiles() {
   Serial.println("Daftar file di SPIFFS:");
   File root = SPIFFS.open("/");
