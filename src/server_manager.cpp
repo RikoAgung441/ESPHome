@@ -4,7 +4,7 @@
 #include "connection_config.h"
 
 WebServer server(80);
-gitt
+
 void listSPIFFSFiles() {
   Serial.println("Daftar file di SPIFFS:");
   File root = SPIFFS.open("/");
@@ -36,31 +36,59 @@ void webServerInit() {
     listSPIFFSFiles(); // Panggil hanya jika mount berhasil
   }
 
-  server.on("/", HTTP_GET, handleRoot);
-
-
-  server.on(" /wifi_configuration", HTTP_GET, []() {
-  File file = SPIFFS.open("/pages/wifi_configuration.html", "r");
-  server.streamFile(file, "text/html");
-  file.close();
+  server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
+  server.onNotFound([](AsyncWebServerRequest *request){
+    request->send(404, "text/plain", "404: Not found");
   });
 
-  server.onNotFound(handleNotFound);
 
   server.on("/save", HTTP_POST, handleSave);
   server.begin();
   Serial.println("Web server started!");
-  // server.begin();
   
 }
 
-void sendJSON(int code, const String &json) {
-  server.send(code, "application/json", json);
+void sendJSON(AsyncWebServerRequest *request, int code, const String &json) {
+  request->send(code, "application/json", json);
 }
 
 
-void webServerHandleClient() {
-  server.handleClient();
+void handleSave(AsyncWebServerRequest *request) {
+  Serial.println("🔄 Menyimpan config...");
+  if (request->method() != HTTP_POST) {
+    sendJSON(request, 405, "{\"error\":\"Method Not Allowed\"}");
+    return;
+  }
+  if (!request->hasArg("plain")) {
+    sendJSON(request,400, "{\"error\":\"No body\"}");
+    return;
+  }
+
+  String body = request->arg("plain");
+  int ssidPos = body.indexOf("\"ssid\"");
+  int passPos = body.indexOf("\"pass\"");
+  if (ssidPos < 0 || passPos < 0) {
+    sendJSON(request, 400, "{\"error\":\"Invalid JSON\"}");
+    return;
+  }
+
+  auto extract = [&](const String& key)->String {
+    int k = body.indexOf("\"" + key + "\"");
+    int colon = body.indexOf(":", k);
+    int firstQuote = body.indexOf("\"", colon + 1);
+    int secondQuote = body.indexOf("\"", firstQuote + 1);
+    if (k < 0 || colon < 0 || firstQuote < 0 || secondQuote < 0) return String("");
+    return body.substring(firstQuote + 1, secondQuote);
+  };
+
+  String ssid = extract("ssid");
+  String pass = extract("pass");
+
+  Serial.println("SSID: " + ssid);
+  Serial.println("PASS: " + pass);
+
+  sendJSON(request, 200, "{\"ok\":true,\"message\":\"WiFi disimpan, device akan restart...\"}");
+  delay(500);
 }
 
 

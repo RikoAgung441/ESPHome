@@ -1,14 +1,14 @@
 #ifndef SERVER_MANAGER
 #define SERVER_MANAGER
 
-#include <WebServer.h>
+#include <ESPAsyncWebServer.h>
 #include <Arduino.h>
 
 
-extern WebServer server;
+extern AsyncWebServer server;
 
 void webServerInit();
-void webServerHandleClient();
-void sendJSON(int code, const String &json);
+void sendJSON(AsyncWebServerRequest *request, int code, const String &json );
+void handleSave(AsyncWebServerRequest *request);
 
 #endif //SERVER_MANAGER

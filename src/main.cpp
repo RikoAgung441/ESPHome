@@ -12,7 +12,6 @@ unsigned long buttonPressTime = 0;
 bool buttonHeld = false;
 bool pendingRestart = false;
 unsigned long restartAt = 0;
-bool apModeActive = false;
 
 // ====== INTERRUPT ======
 void IRAM_ATTR handleButton() {
@@ -51,9 +50,8 @@ void setup() {
 // ====== Loop ======
 void loop() {
   // Jalankan web server
-    dnsServer.processNextRequest();
-    webServerHandleClient();
-  
+  dnsServer.processNextRequest();
+
   
 
   // Reset ke default jika tombol > 5 detik

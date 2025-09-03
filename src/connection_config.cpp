@@ -57,40 +57,6 @@ void resetToDefault(){
   WiFi.softAP(ap_ssid.c_str(), ap_password.c_str());
 }
 
-void handleSave(){
-  Serial.println("🔄 Menyimpan config...");
-  if (server.method() != HTTP_POST) {
-    sendJSON(405, "{\"error\":\"Method Not Allowed\"}");
-    return;
-  }
-  if (!server.hasArg("plain")) {
-    sendJSON(400, "{\"error\":\"No body\"}");
-    return;
-  }
-
-  String body = server.arg("plain");
-  int ssidPos = body.indexOf("\"ssid\"");
-  int passPos = body.indexOf("\"pass\"");
-  if (ssidPos < 0 || passPos < 0) {
-    sendJSON(400, "{\"error\":\"Invalid JSON\"}");
-    return;
-  }
-
-  auto extract = [&](const String& key)->String {
-    int k = body.indexOf("\"" + key + "\"");
-    int colon = body.indexOf(":", k);
-    int firstQuote = body.indexOf("\"", colon + 1);
-    int secondQuote = body.indexOf("\"", firstQuote + 1);
-    if (k < 0 || colon < 0 || firstQuote < 0 || secondQuote < 0) return String("");
-    return body.substring(firstQuote + 1, secondQuote);
-  };
-
-  String ssid = extract("ssid");
-  String pass = extract("pass");
-
-  Serial.println("SSID: " + ssid);
-  Serial.println("PASS: " + pass);
-}
 
 String wifiManagerGetIP() {
   if (WiFi.getMode() & WIFI_AP) {
