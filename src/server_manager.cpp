@@ -14,7 +14,6 @@ void webServerInit() {
   }
 
   server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
-  server.serveStatic("/wifi_config", SPIFFS, "/pages/wifi_config.html");
   server.onNotFound([](AsyncWebServerRequest *request){
     request->send(404, "text/plain", "404: Not found");
   });
@@ -22,10 +21,10 @@ void webServerInit() {
 
   server.on("/save", HTTP_POST, handleSave);
   server.on("/wifi_configuration", HTTP_GET, [](AsyncWebServerRequest *request){
-    if (SPIFFS.exists("/pages/wifi_config.html")) {
-      request->send(SPIFFS, "/pages/wifi_config.html", "text/html");
+    if (SPIFFS.exists("/wifi_config.html")) {
+      request->send(SPIFFS, "/wifi_config.html", "text/html");
     } else {
-      request->send(404, "text/plain", "Error: /pages/wifi_config.html tidak ditemukan di SPIFFS!");
+      request->send(404, "text/plain", "Error: /wifi_config.html tidak ditemukan di SPIFFS!");
     }
   });
   server.begin();
