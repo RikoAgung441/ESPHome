@@ -17,15 +17,17 @@ fields.forEach((field) => {
 		const id = field.querySelector("input").id
 		const value = field.querySelector("input").value
 
-		const res = await fetch("/api/savewifi", {
+		const res = await fetch("/api/setting", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ id, value }),
+			body: JSON.stringify({ key: id, value }),
 		})
 
 		const data = await res.json()
+
+		if (data.status === "success") {
+			alert("Success")
+		}
 		console.log(data)
 	})
 })
-
-console.log(fields)

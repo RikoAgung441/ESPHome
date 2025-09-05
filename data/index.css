@@ -75,6 +75,12 @@ input:focus {
   gap: 1rem;
 }
 
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
 .information {
   display: flex;
   flex-direction: column;
@@ -122,8 +128,47 @@ input:focus {
 /*  */
 
 .card {
-  background: rgba(166, 197, 255, 0.521);
-  border: 1px solid rgb(13, 98, 255);
+  background: rgba(166, 197, 255, 0.39);
+  border: 1px solid rgba(13, 98, 255, 0.685);
   border-radius: 0.3rem;
-  padding: 1rem;
+  /* padding: 1rem; */
+  /* padding-top: ; */
+  height: 8rem;
+  display: flex;
+  /* gap: 1rem; */
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card_head {
+  display: flex;
+  /* gap: .7rem; */
+  height: 40%;
+  border-bottom: 1px solid rgba(13, 98, 255, 0.685);
+}
+
+.card_content {
+  padding: .4rem;
+  /* border: 1px solid rgba(13, 98, 255, 0.685); */
+  height: 100%;
+  overflow: scroll;
+  font-size: .9rem;
+}
+
+.card_title {
+  /* border: 1px solid rgba(13, 98, 255, 0.685); */
+  flex-basis: 1;
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.card_icons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: .4rem .7rem;
+  /* border: 1px solid rgba(13, 98, 255, 0.685); */
 }
