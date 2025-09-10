@@ -2,22 +2,35 @@
 #include <SPIFFS.h>
 #include <FS.h>
 #include "connection_config.h"
-#include "spiff_manager.h"
+// #include "spiff_manager.h"
 #include <ArduinoJson.h>
+#include <AsyncJson.h>
+#include "preferences_manager.h"
 
 AsyncWebServer server(80);
+
+// void listSPIFFSFiles() {
+//   Serial.println("Daftar file di SPIFFS:");
+//   File root = SPIFFS.open("/");
+//   File file = root.openNextFile();
+//   while (file) {
+//     Serial.print("  ");
+//     Serial.print(file.name());
+//     Serial.print(" (");
+//     Serial.print(file.size());
+//     Serial.println(" bytes)");
+//     file = root.openNextFile();
+//   }
+// }
 
 void webServerInit() {
   if (!SPIFFS.begin(true)) {
     Serial.println("SPIFFS gagal mount!");
-  } else {
-    listSPIFFSFiles();
   }
 
-  // server.on("/save", HTTP_POST, handleSave);
-  handlerReqBody();
+  // handlerReqBody();
   server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
-
+  
   server.on("/wifi_configuration", HTTP_GET, [](AsyncWebServerRequest *request){
     if (SPIFFS.exists("/wifi_config.html")) {
       request->send(SPIFFS, "/wifi_config.html", "text/html");
@@ -25,10 +38,44 @@ void webServerInit() {
       request->send(404, "text/plain", "Error: /wifi_config.html tidak ditemukan di SPIFFS!");
     }
   });
+  // server.on("/save", HTTP_POST, handleSave);
+
+  server.on("/hello", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(200, "text/plain", "Hello, World!");
+  });
+
+  server.on("/api/test", HTTP_POST, [](AsyncWebServerRequest *request){
+    preferences.begin("test", true); // read-only
+    String ssid = preferences.getString("ssid", "");
+    Serial.println(ssid);
+    preferences.end();
+
+    JsonDocument doc;
+    doc["success"] = true;
+    doc["ssid"] = ssid;
+
+    String json;
+    serializeJson(doc, json);
+    // request->send(200, "application/json", "{\"success\":true}");
+    request->send(200, "application/json", json);
+  });
 
   server.onNotFound([](AsyncWebServerRequest *request){
     request->send(404, "text/plain", "404: Not found");
   });
+
+  AsyncCallbackJsonWebHandler *handler = new AsyncCallbackJsonWebHandler("/save", [](AsyncWebServerRequest *request, JsonVariant &json) {
+    JsonObject obj = json.as<JsonObject>();
+    String key = obj["key"];
+    String value = obj["value"];
+    Serial.printf("KEY: %s, VALUE: %s\n", key.c_str(), value.c_str());
+    preferences.begin("test", false);
+    preferences.putString(key.c_str(), value);
+    preferences.end();
+    request->send(200, "application/json", "{\"msg\":\"Data diterima\"}");
+  });
+
+  server.addHandler(handler);
 
   server.begin();
   Serial.println("Web server started!");
@@ -39,60 +86,6 @@ void sendJSON(AsyncWebServerRequest *request, int code, const String &json) {
   request->send(code, "application/json", json);
 }
 
-static void handlerReqBody() {
-    server.onRequestBody([](AsyncWebServerRequest *request, uint8_t *data,
-                          size_t len, size_t index, size_t total) {
-    String body;
-    body.reserve(len);
-    for (size_t i = 0; i < len; i++) {
-      body += (char)data[i];
-    }
-
-    Serial.printf("\nRequest ke %s\n", request->url().c_str());
-    Serial.println("Body:");
-    Serial.println(body);
-
-    StaticJsonDocument<256> doc;
-    DeserializationError error = deserializeJson(doc, body);
-    if (error) {
-      request->send(400, "application/json", "{\"error\":\"Invalid JSON\"}");
-      return;
-    }
-
-    if (request->url() == "/save") {
-      const char* key = doc["key"];
-      int value = doc["value"];
-      Serial.printf("➡ Save Data | key: %s, value: %s\n", key, value);
-
-      request->send(200, "application/json", "{\"msg\":\"Data saved\"}");
-    } 
-    // else if (request->url() == "/lamp") {
-    //   bool state = doc["state"]; 
-    //   Serial.printf("➡ Lamp Control | State: %s\n", state ? "ON" : "OFF");
-
-    
-    //   digitalWrite(2, state ? HIGH : LOW);
-
-    //   request->send(200, "application/json", "{\"msg\":\"Lamp updated\"}");
-    // }
-  });
-}
-
-// void getSettings() {
-//   server.on("/save", HTTP_POST, 
-//   [](AsyncWebServerRequest *request) {
-//       if (!request->hasArg("plain")) {
-//           request->send(400, "application/json", "{\"error\":\"No body\"}");
-//           return;
-//       }
-
-//       String body = request->arg("plain");
-//       // lakukan parsing JSON di sini kalau perlu
-//       request->send(200, "application/json", "{\"success\":true}");
-//   }
-// );
-
-// }
 
 
 // void handleSave(AsyncWebServerRequest *request) {

@@ -16,8 +16,8 @@ void connectionInit(){
   preferences.end();
 
   if (ap_ssid == "" || ap_password.length() < 8) {
-    ap_ssid = "ESP32_Default";
-    ap_password = "12345678";
+    ap_ssid = "ESP32_Defaulty";
+    ap_password = "11223344";
     Serial.println("⚠️ Config kosong, pakai default");
   }
 
