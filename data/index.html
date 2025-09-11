@@ -5,17 +5,101 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="global.css">
+    <link rel="stylesheet" href="home.css">
   </head>
 
   <body>
-    <nav class="navbar">
-      <h1>Smart Home</h1>
-    </nav>
     <div class="container">
-      <div class="card">
-        <h1>test</h1>
-      </div>
+      <nav class="navbar">
+        <h1>Smart Home</h1>
+        <button class="btn_setting" onclick="goToSetting()">
+          <img src="./asset/settings.png" alt="setting">
+        </button>
+      </nav>
+      <header class="header_home">
+        <div>
+          <h1 class="sayHello">Hi Everybody'🖐️</h1>
+          <p class="welcome">Welcome back to home</p>
+        </div>
+      </header>
+      <main class="main_home">
+        <div class="card information">
+          <img class="icon_wifi" src="./asset/wifi.png" alt="conection">
+          <div class="information_content">
+            <div class="information_ssid">
+              <h3>Wifi SSID</h3>
+              <span class="ssid">ESP32 Default</span>
+            </div>
+            <div class="information_password">
+              <h3>Wifi Password</h3>
+              <span class="password">11223344</span>
+            </div>
+          </div>
+        </div>
+        <section class="rooms">
+          <div class="section_title">
+            <h2>List Room</h2>
+            <span>See all</span>
+          </div>
+          <div class="rooms_container">
+            <button data-room="1" onclick="goToRoom(this)" class="room">
+              <div class="header_room">
+                <div>
+                  <div class="circle_icon">
+                    <img src="./asset/room.svg" alt="room">
+                  </div>
+                </div>
+                <div class="amount_channel">
+                  <h3>Room 1</h3>
+                  <span> 5 channel</span>
+                </div>
+              </div>
+            </button>
+            <button data-room="2" onclick="goToRoom(this)" class="room">
+              <div class="header_room">
+                <div>
+                  <div class="circle_icon">
+                    <img src="./asset/room.svg" alt="room">
+                  </div>
+                </div>
+                <div class="amount_channel">
+                  <h3>Room 2</h3>
+                  <span> 5 channel</span>
+                </div>
+              </div>
+            </button>
+            <button data-room="3" onclick="goToRoom(this)" class="room">
+              <div class="header_room">
+                <div>
+                  <div class="circle_icon">
+                    <img src="./asset/room.svg" alt="room">
+                  </div>
+                </div>
+                <div class="amount_channel">
+                  <h3>Room 3</h3>
+                  <span> 5 channel</span>
+                </div>
+              </div>
+            </button>
+            <button data-room="4" onclick="goToRoom(this)" class="room">
+              <div class="header_room">
+                <div>
+                  <div class="circle_icon">
+                    <img src="./asset/room.svg" alt="room">
+                  </div>
+                </div>
+                <div class="amount_channel">
+                  <h3>Room 4</h3>
+                  <span> 5 channel</span>
+                </div>
+              </div>
+            </button>
+          </div>
+        </section>
+      </main>
+      <footer>
+      </footer>
     </div>
     <script src="index.js">
     </script>

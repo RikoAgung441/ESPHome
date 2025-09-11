@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="global.css">
+    <link rel="stylesheet" href="./setting.css">
+    <!-- <link rel="stylesheet" href="./index.css"> -->
+  </head>
+
+  <body>
+    <div class="container">
+      <nav class="navbar">
+        <a href="./index.html" class="btn_back"><img class="icon_back"
+            src="./asset/back.png" alt="back"></a>
+        <h1>Setting</h1>
+      </nav>
+      <main class="main_setting">
+        <div class="container_field_form">
+          <label for="ssid">SSID</label>
+          <div class="container_field_input">
+            <input type="text" id="ssid" data-key="ssid"
+              placeholder="Enter your wifi name">
+            <button type="button" class="btn_set" id="btn_set_ssid">Set</button>
+          </div>
+        </div>
+        <div class="container_field_form">
+          <label for="input_wifi_password">Password</label>
+          <div class="container_field_input">
+            <div class="container_input">
+              <input type="password" id="wifi_password" data-key="password"
+                placeholder="Enter your wifi name">
+              <img class="input_icon_eye icon" src="./asset/eye_off.svg"
+                alt="eye">
+            </div>
+            <button type="button" class="btn_set">Set</button>
+          </div>
+        </div>
+      </main>
+      <div id="toast-container"></div>
+    </div>
+    <script src="./setting.js"></script>
+  </body>
+
+</html>

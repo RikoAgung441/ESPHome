@@ -1,0 +1,69 @@
+input {
+  padding: 0.3rem 0.5rem;
+  border-radius: 0.3rem;
+  width: 100%;
+  border: 1px solid rgb(13, 98, 255);
+  /* background: transparent; */
+  background: linear-gradient(180deg, var(--card), var(--glass));
+}
+
+input::placeholder {
+  color: var(--muted-white);
+}
+
+button {
+  padding: 0.3rem 0.5rem;
+  border-radius: 0.3rem;
+  border: 1px solid rgb(13, 98, 255);
+}
+
+input:focus {
+  /* outline-color: rgb(13, 98, 255); */
+  border: 1px solid #3b82f6;
+  box-shadow: 0 0 0 4px #3b83f65f;
+  outline: none;
+  outline: 1px solid rgb(13, 98, 255);
+}
+
+.main_setting {
+  margin-top: 1rem;
+}
+
+.icon {
+  height: 1.3rem;
+  width: 1.3rem;
+  cursor: pointer;
+}
+
+.container_field_form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 1rem;
+}
+
+.container_input {
+  position: relative;
+  width: 100%;
+}
+
+.container_input input {
+  padding-right: 2.2rem;
+}
+
+.container_field_input {
+  display: flex;
+  align-items: center;
+}
+
+.btn_set {
+  display: inline-block;
+  padding: 0.3rem 0.8rem;
+}
+
+.input_icon_eye {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
