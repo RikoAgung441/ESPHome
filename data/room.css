@@ -1,11 +1,11 @@
 .main_room {
   margin-top: 1rem;
-  padding: 0 .5rem;
+  /* padding: 0 .5rem; */
 }
 
 .channel_container {
   margin-top: 1rem;
-  padding: 0 .5rem;
+  /* padding: 0 .5rem; */
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: .7rem;
@@ -20,7 +20,7 @@
 
 .channel {
   border-radius: .7rem;
-  height: 8rem;
+  height: 9rem;
   border: 1px solid var(--muted);
   position: relative;
   overflow: hidden;
@@ -76,10 +76,18 @@
 }
 
 .channel_content {
+  /* border: 1px solid var(--muted); */
   padding: .8rem 1rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.channel_name h3 {
+  font-size: .9em;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: .2rem;
 }
 
 .channel_name span {
