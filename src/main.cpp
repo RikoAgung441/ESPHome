@@ -6,6 +6,7 @@
 
 #define BUTTON_PIN 12   // Tombol BOOT (GPIO)
 #define LED_PIN 2      // LED indikator
+int relayPin[4] = {14, 27, 26, 25}; // Relay control pins
 
 volatile bool buttonInterrupt = false;
 unsigned long buttonPressTime = 0;
@@ -40,6 +41,11 @@ void setup() {
   pinMode(LED_PIN, OUTPUT);
   pinMode(BUTTON_PIN, INPUT_PULLUP);
 
+  for (int i = 0; i < 3; i++) {
+    pinMode(relayPin[i], OUTPUT);
+    digitalWrite(relayPin[i], LOW); // Matikan semua relay saat start
+  }
+
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), handleButton, CHANGE);
 
   connectionInit();
@@ -73,4 +79,10 @@ void loop() {
     Serial.print("IP: "); Serial.println(WiFi.softAPIP());
     startAPMode();
   }
+}
+
+void relayControl(int relayIndex, bool state) {
+  if (relayIndex < 1 || relayIndex > 4) return; // Validasi index
+    digitalWrite(relayPin[relayIndex-1], state ? HIGH : LOW);
+    Serial.printf("Relay %d %s\n", relayIndex, state ? "ON" : "OFF");
 }
