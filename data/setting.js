@@ -1,5 +1,4 @@
 const buttonEye = document.querySelector(".input_icon_eye")
-const inputSSID = document.querySelector("#SSID")
 const inputPassword = document.querySelector("#wifi_password")
 const fields = document.querySelectorAll(".container_field_form")
 
@@ -9,7 +8,7 @@ fields.forEach((field) => {
 		const value = field.querySelector("input").value
 
 		try {
-			const res = await fetch("/save", {
+			const res = await fetch("/set", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ key, value }),
@@ -17,7 +16,8 @@ fields.forEach((field) => {
 
 			const data = await res.json()
 
-			if (data.status === "success") {
+			console.log(data)
+			if (data.ok) {
 				showToast("Set successfully!")
 			}
 		} catch (error) {
@@ -25,27 +25,6 @@ fields.forEach((field) => {
 		}
 	})
 })
-
-function showToast(message, error = false, duration = 3000) {
-	const container = document.getElementById("toast-container")
-
-	const toast = document.createElement("div")
-	toast.className = "toast"
-	toast.innerText = message
-	container.appendChild(toast)
-
-	setTimeout(() => {
-		error && toast.classList.add("error")
-		toast.classList.add("show")
-	}, 100)
-
-	setTimeout(() => {
-		toast.classList.remove("show")
-		toast.classList.add("hide")
-
-		toast.addEventListener("transitionend", () => toast.remove())
-	}, duration)
-}
 
 const getData = async () => {
 	try {
@@ -56,6 +35,7 @@ const getData = async () => {
 		const data = await res.json()
 		console.log(data)
 	} catch (error) {
+		console.log("error test", error)
 		showToast("Failed to fetch data from server", true)
 	}
 }

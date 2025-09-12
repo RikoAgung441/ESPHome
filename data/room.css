@@ -11,7 +11,13 @@
   gap: .7rem;
 }
 
+.channel_all_container {
+  /* margin: 0 .5rem; */
+  margin-top: 1rem;
+}
+
 .channel_all {
+  /* border: 1px solid var(--muted); */
   border-radius: .7rem;
   height: 5.5rem;
   border: 1px solid var(--muted);
@@ -77,6 +83,7 @@
 
 .channel_content {
   /* border: 1px solid var(--muted); */
+  height: 100%;
   padding: .8rem 1rem;
   display: flex;
   align-items: center;

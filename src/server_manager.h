@@ -8,7 +8,8 @@
 extern AsyncWebServer server;
 
 void webServerInit();
-static void handlerReqBody();
+// static void handlerReqBody();
+static void endpointSetting ();
 void sendJSON(AsyncWebServerRequest *request, int code, const String &json );
 // void handleSave(AsyncWebServerRequest *request);
 

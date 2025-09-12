@@ -2,80 +2,47 @@
 #include <SPIFFS.h>
 #include <FS.h>
 #include "connection_config.h"
-// #include "spiff_manager.h"
+#include "spiff_manager.h"
 #include <ArduinoJson.h>
 #include <AsyncJson.h>
 #include "preferences_manager.h"
 
 AsyncWebServer server(80);
-
-// void listSPIFFSFiles() {
-//   Serial.println("Daftar file di SPIFFS:");
-//   File root = SPIFFS.open("/");
-//   File file = root.openNextFile();
-//   while (file) {
-//     Serial.print("  ");
-//     Serial.print(file.name());
-//     Serial.print(" (");
-//     Serial.print(file.size());
-//     Serial.println(" bytes)");
-//     file = root.openNextFile();
-//   }
-// }
+String resJson;
 
 void webServerInit() {
   if (!SPIFFS.begin(true)) {
     Serial.println("SPIFFS gagal mount!");
+  }else{
+    Serial.println("SPIFFS mounted successfully.");
+    listSPIFFSFiles();
   }
 
-  // handlerReqBody();
   server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
-  
-  server.on("/wifi_configuration", HTTP_GET, [](AsyncWebServerRequest *request){
-    if (SPIFFS.exists("/wifi_config.html")) {
-      request->send(SPIFFS, "/wifi_config.html", "text/html");
-    } else {
-      request->send(404, "text/plain", "Error: /wifi_config.html tidak ditemukan di SPIFFS!");
-    }
-  });
-  // server.on("/save", HTTP_POST, handleSave);
+  endpointSetting();
 
   server.on("/hello", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(200, "text/plain", "Hello, World!");
   });
 
-  server.on("/api/test", HTTP_POST, [](AsyncWebServerRequest *request){
-    preferences.begin("test", true); // read-only
-    String ssid = preferences.getString("ssid", "");
-    Serial.println(ssid);
-    preferences.end();
+  // server.on("/api/test", HTTP_POST, [](AsyncWebServerRequest *request){
+  //   preferences.begin("test", true);
+  //   String ssid = preferences.getString("ssid", "");
+  //   Serial.println(ssid);
+  //   preferences.end();
 
-    JsonDocument doc;
-    doc["success"] = true;
-    doc["ssid"] = ssid;
+  //   JsonDocument doc;
+  //   doc["success"] = true;
+  //   doc["ssid"] = ssid;
 
-    String json;
-    serializeJson(doc, json);
-    // request->send(200, "application/json", "{\"success\":true}");
-    request->send(200, "application/json", json);
-  });
+  //   String json;
+  //   serializeJson(doc, json);
+  //   request->send(200, "application/json", json);
+  // });
 
   server.onNotFound([](AsyncWebServerRequest *request){
     request->send(404, "text/plain", "404: Not found");
   });
-
-  AsyncCallbackJsonWebHandler *handler = new AsyncCallbackJsonWebHandler("/save", [](AsyncWebServerRequest *request, JsonVariant &json) {
-    JsonObject obj = json.as<JsonObject>();
-    String key = obj["key"];
-    String value = obj["value"];
-    Serial.printf("KEY: %s, VALUE: %s\n", key.c_str(), value.c_str());
-    preferences.begin("test", false);
-    preferences.putString(key.c_str(), value);
-    preferences.end();
-    request->send(200, "application/json", "{\"msg\":\"Data diterima\"}");
-  });
-
-  server.addHandler(handler);
 
   server.begin();
   Serial.println("Web server started!");
@@ -86,44 +53,96 @@ void sendJSON(AsyncWebServerRequest *request, int code, const String &json) {
   request->send(code, "application/json", json);
 }
 
+static void endpointSetting() {
+  server.on("/setting", HTTP_GET, [](AsyncWebServerRequest *request){
+    if (SPIFFS.exists("/setting.html")) {
+      request->send(SPIFFS, "/wifi_config.html", "text/html");
+    } else {
+      request->send(404, "text/plain", "Error: /wifi_config.html tidak ditemukan di SPIFFS!");
+    }
+  });
+
+  server.on("/api/settings", HTTP_GET, [](AsyncWebServerRequest *request){
+    preferences.begin("setting", true);
+    String ssid = preferences.getString("ssid", "");
+    Serial.println(ssid);
+    preferences.end();
+
+    JsonDocument doc;
+    doc["success"] = true;
+    doc["ssid"] = ssid;
+
+    serializeJson(doc, resJson);
+    request->send(200, "application/json", resJson);
+  });
+
+  AsyncCallbackJsonWebHandler *handler = new AsyncCallbackJsonWebHandler("/api/set", [](AsyncWebServerRequest *request, JsonVariant &json) {
+
+    
+
+    if (!json.is<JsonObject>()) {
+      request->send(400, "application/json", "{\"msg\":\"Data tidak valid\"}");
+      return;
+    }
+
+    JsonObject obj = json.as<JsonObject>();
+    String key = obj["key"];
+    String value = obj["value"];
+
+    if (key.isEmpty() || value.isEmpty()) {
+      request->send(400, "application/json", "{\"msg\":\"Key atau value tidak boleh kosong\"}");
+      return;
+    }
+
+    if(key.length() > 15 || value.length() > 50) {
+      request->send(400, "application/json", "{\"msg\":\"Data tidak valid\"}");
+      return;
+    }
+
+    const char* allowedKeys[] = {"ssid", "password"};
+    bool allowed = false;
+    for (const char* k : allowedKeys) {
+      if (key.equals(k)) {
+        allowed = true;
+        break;
+      }
+    }
+
+    if (!allowed) {
+      request->send(400, "application/json", "{\"msg\":\"Key tidak diperbolehkan\"}");
+      return;
+    }
+
+    JsonDocument doc;
+    File file = SPIFFS.open("/settings.json", "r");
+    if (file) {
+      DeserializationError err = deserializeJson(doc, file);
+      file.close();
+      if (err) {
+        Serial.println("JSON lama rusak, akan direset.");
+        doc.clear();
+      }
+    }
+
+    doc[key] = value;
+
+    file = SPIFFS.open("/settings.json", "w");
+    if (!file) {
+      request->send(500, "application/json","{\"msg\":\"Gagal menulis file\"}");
+      return;
+    }
+    serializeJsonPretty(doc, file);
+    file.close();
 
 
-// void handleSave(AsyncWebServerRequest *request) {
-//   Serial.println("🔄 Menyimpan config...");
-//   if (request->method() != HTTP_POST) {
-//     sendJSON(request, 405, "{\"error\":\"Method Not Allowed\"}");
-//     return;
-//   }
-//   if (!request->hasArg("plain")) {
-//     sendJSON(request,400, "{\"error\":\"No body\"}");
-//     return;
-//   }
+    JsonDocument res;
+    res["status"] = "success";
+    res["msg"] = "Data berhasil disimpan";
 
-//   String body = request->arg("plain");
-//   int ssidPos = body.indexOf("\"ssid\"");
-//   int passPos = body.indexOf("\"pass\"");
-//   if (ssidPos < 0 || passPos < 0) {
-//     sendJSON(request, 400, "{\"error\":\"Invalid JSON\"}");
-//     return;
-//   }
+    serializeJson(res, resJson);
+    request->send(200, "application/json", resJson);
+  });
 
-//   auto extract = [&](const String& key)->String {
-//     int k = body.indexOf("\"" + key + "\"");
-//     int colon = body.indexOf(":", k);
-//     int firstQuote = body.indexOf("\"", colon + 1);
-//     int secondQuote = body.indexOf("\"", firstQuote + 1);
-//     if (k < 0 || colon < 0 || firstQuote < 0 || secondQuote < 0) return String("");
-//     return body.substring(firstQuote + 1, secondQuote);
-//   };
-
-//   String ssid = extract("ssid");
-//   String pass = extract("pass");
-
-//   Serial.println("SSID: " + ssid);
-//   Serial.println("PASS: " + pass);
-
-//   sendJSON(request, 200, "{\"ok\":true,\"message\":\"WiFi disimpan, device akan restart...\"}");
-//   delay(500);
-// }
-
+  server.addHandler(handler);
+}
 
