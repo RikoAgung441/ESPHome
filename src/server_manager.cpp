@@ -5,7 +5,7 @@
 #include "spiff_manager.h"
 #include <ArduinoJson.h>
 #include <AsyncJson.h>
-#include "preferences_manager.h"
+// #include "preferences_manager.h"
 
 AsyncWebServer server(80);
 String resJson;
@@ -19,26 +19,13 @@ void webServerInit() {
   }
 
   server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
+
   endpointSetting();
+  endpointRooms();
 
   server.on("/hello", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(200, "text/plain", "Hello, World!");
   });
-
-  // server.on("/api/test", HTTP_POST, [](AsyncWebServerRequest *request){
-  //   preferences.begin("test", true);
-  //   String ssid = preferences.getString("ssid", "");
-  //   Serial.println(ssid);
-  //   preferences.end();
-
-  //   JsonDocument doc;
-  //   doc["success"] = true;
-  //   doc["ssid"] = ssid;
-
-  //   String json;
-  //   serializeJson(doc, json);
-  //   request->send(200, "application/json", json);
-  // });
 
   server.onNotFound([](AsyncWebServerRequest *request){
     request->send(404, "text/plain", "404: Not found");
@@ -54,25 +41,30 @@ void sendJSON(AsyncWebServerRequest *request, int code, const String &json) {
 }
 
 static void endpointSetting() {
+
   server.on("/setting", HTTP_GET, [](AsyncWebServerRequest *request){
     if (SPIFFS.exists("/setting.html")) {
-      request->send(SPIFFS, "/wifi_config.html", "text/html");
+      request->send(SPIFFS, "/setting.html", "text/html");
     } else {
-      request->send(404, "text/plain", "Error: /wifi_config.html tidak ditemukan di SPIFFS!");
+      request->send(404, "text/plain", "Error: file tidak ditemukan di SPIFFS!");
     }
   });
 
   server.on("/api/settings", HTTP_GET, [](AsyncWebServerRequest *request){
-    preferences.begin("setting", true);
-    String ssid = preferences.getString("ssid", "");
-    Serial.println(ssid);
-    preferences.end();
+    if (!SPIFFS.exists("/settings.json")) {
+      request->send(200, "application/json", "{}");
+      return;
+    }
 
-    JsonDocument doc;
-    doc["success"] = true;
-    doc["ssid"] = ssid;
+    File file = SPIFFS.open("/settings.json", "r");
+    if (!file) {
+      request->send(500, "application/json", "{\"msg\":\"Gagal membaca file\"}");
+      return;
+    }
 
-    serializeJson(doc, resJson);
+    resJson = file.readString();
+    file.close();
+
     request->send(200, "application/json", resJson);
   });
 
@@ -146,3 +138,12 @@ static void endpointSetting() {
   server.addHandler(handler);
 }
 
+static void endpointRooms() {
+  server.on("/rooms", HTTP_GET, [](AsyncWebServerRequest *request){
+    if (SPIFFS.exists("/rooms.html")) {
+      request->send(SPIFFS, "/rooms.html", "text/html");
+    } else {
+      request->send(404, "text/plain", "Error: file tidak ditemukan di SPIFFS!");
+    }
+  });
+}
