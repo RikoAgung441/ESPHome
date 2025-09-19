@@ -51,38 +51,48 @@ static void endpointSetting() {
   });
 
   server.on("/api/settings", HTTP_GET, [](AsyncWebServerRequest *request){
-    if (!SPIFFS.exists("/settings.json")) {
+    if (!SPIFFS.exists("/database.json")) {
       request->send(200, "application/json", "{}");
       return;
     }
 
-    File file = SPIFFS.open("/settings.json", "r");
+    File file = SPIFFS.open("/database.json", "r");
     if (!file) {
       request->send(500, "application/json", "{\"msg\":\"Gagal membaca file\"}");
       return;
     }
 
-    resJson = file.readString();
+    // resJson = file.readString();
+    JsonDocument docDBSetting;
+    DeserializationError err = deserializeJson(docDBSetting, file);
+    if (err) {
+      Serial.print("❌ Gagal parse JSON: ");
+      Serial.println(err.c_str());
+      request->send(500, "application/json", "{\"msg\":\"Gagal membaca file\"}");
+      return;
+    }
+
+    JsonObject settingObj = docDBSetting["settings"].as<JsonObject>();
+    serializeJson(settingObj, resJson);
     file.close();
 
     request->send(200, "application/json", resJson);
   });
 
-  AsyncCallbackJsonWebHandler *handler = new AsyncCallbackJsonWebHandler("/api/set", [](AsyncWebServerRequest *request, JsonVariant &json) {
 
-    
+  AsyncCallbackJsonWebHandler *handlerSetSettings = new AsyncCallbackJsonWebHandler("/api/set", [](AsyncWebServerRequest *request, JsonVariant &json) {
 
     if (!json.is<JsonObject>()) {
       request->send(400, "application/json", "{\"msg\":\"Data tidak valid\"}");
       return;
     }
 
-    JsonObject obj = json.as<JsonObject>();
-    String key = obj["key"];
-    String value = obj["value"];
+    JsonObject reqObj = json.as<JsonObject>();
+    String key = reqObj["key"];
+    String value = reqObj["value"];
 
     if (key.isEmpty() || value.isEmpty()) {
-      request->send(400, "application/json", "{\"msg\":\"Key atau value tidak boleh kosong\"}");
+      request->send(400, "application/json", "{\"msg\":\"Data tidak valid\"}");
       return;
     }
 
@@ -101,29 +111,42 @@ static void endpointSetting() {
     }
 
     if (!allowed) {
-      request->send(400, "application/json", "{\"msg\":\"Key tidak diperbolehkan\"}");
+      request->send(400, "application/json", "{\"msg\":\"Data tidak valid\"}");
       return;
     }
 
-    JsonDocument doc;
-    File file = SPIFFS.open("/settings.json", "r");
+
+    JsonDocument docSet;
+    File file = SPIFFS.open("/database.json", "r");
+
     if (file) {
-      DeserializationError err = deserializeJson(doc, file);
+      DeserializationError error = deserializeJson(docSet, file);
       file.close();
-      if (err) {
-        Serial.println("JSON lama rusak, akan direset.");
-        doc.clear();
+
+      if (error) {
+        Serial.print("❌ Gagal parse JSON: ");
+        Serial.println(error.c_str());
+        request->send(500, "application/json", "{\"msg\":\"Gagal membaca database\"}");
+        return;
       }
-    }
-
-    doc[key] = value;
-
-    file = SPIFFS.open("/settings.json", "w");
-    if (!file) {
-      request->send(500, "application/json","{\"msg\":\"Gagal menulis file\"}");
+    } else {
+      request->send(500, "application/json", "{\"msg\":\"File database.json tidak ditemukan\"}");
       return;
     }
-    serializeJsonPretty(doc, file);
+
+
+    // if (!docSet.containsKey("settings")) {
+    //   docSet["settings"] = JsonObject();
+    // }
+
+    docSet["settings"][key] = value;
+
+    file = SPIFFS.open("/database.json", "w");
+    if (!file) {
+      request->send(500, "application/json", "{\"msg\":\"Gagal menulis file\"}");
+      return;
+    }
+    serializeJsonPretty(docSet, file);
     file.close();
 
 
@@ -135,15 +158,122 @@ static void endpointSetting() {
     request->send(200, "application/json", resJson);
   });
 
-  server.addHandler(handler);
+  server.addHandler(handlerSetSettings);
 }
 
 static void endpointRooms() {
-  server.on("/rooms", HTTP_GET, [](AsyncWebServerRequest *request){
-    if (SPIFFS.exists("/rooms.html")) {
-      request->send(SPIFFS, "/rooms.html", "text/html");
+  server.on("/room", HTTP_GET, [](AsyncWebServerRequest *request){
+    if (SPIFFS.exists("/room.html")) {
+      request->send(SPIFFS, "/room.html", "text/html");
     } else {
       request->send(404, "text/plain", "Error: file tidak ditemukan di SPIFFS!");
     }
   });
+
+  server.on("/api/rooms", HTTP_GET, [](AsyncWebServerRequest *request){
+    if (!SPIFFS.exists("/database.json")) {
+      request->send(200, "application/json", "[]");
+      return;
+    }
+
+    File file = SPIFFS.open("/database.json", "r");
+    if (!file) {
+      request->send(500, "application/json", "{\"msg\":\"Gagal membaca file\"}");
+      return;
+    }
+
+    resJson = file.readString();
+    file.close();
+
+    JsonDocument docDB;
+    DeserializationError err = deserializeJson(docDB, resJson);
+    if (err) {
+      request->send(500, "application/json", "{\"msg\":\"Gagal memproses data\"}");
+      return;
+    }
+
+    JsonArray arr = docDB["rooms"].as<JsonArray>();
+    String roomsJson;
+    serializeJson(arr, roomsJson);
+
+    request->send(200, "application/json", roomsJson);
+  });
+
+  server.on("/api/room", HTTP_GET, [](AsyncWebServerRequest *request){
+    String reqRoom = "";
+    Serial.println("Request room received");
+
+    // if (request->hasParam("id", true)) {
+    //   Serial.println("Parameter id ditemukan");
+    //   reqRoom = request->getParam("id", true)->value();
+    //   Serial.print("Request room: ");
+    //   Serial.println(reqRoom);
+    // }
+
+    if (request->hasParam("id")) {
+      Serial.println("Parameter id ditemukan");
+      reqRoom = request->getParam("id")->value();
+      Serial.println("ID: " + reqRoom);
+    }
+
+    if (!SPIFFS.exists("/database.json")) {
+      request->send(200, "application/json", "[]");
+      return;
+    }
+
+    File file = SPIFFS.open("/database.json", "r");
+    if (!file) {
+      request->send(500, "application/json", "{\"msg\":\"Gagal membaca file\"}");
+      return;
+    }
+
+    resJson = file.readString();
+    // Serial.println("Data dari file:");
+    // Serial.println(resJson);
+    file.close();
+
+    if(reqRoom.isEmpty()) {
+      request->send(400, "application/json", "{\"msg\":\"Parameter room diperlukan\"}");
+      return;
+    }
+
+    JsonDocument docDBRooms;
+    DeserializationError err = deserializeJson(docDBRooms, resJson);
+    if (err) {
+      request->send(500, "application/json", "{\"msg\":\"Gagal memproses data\"}");
+      return;
+    }
+
+    Serial.println("Data rooms:");
+    Serial.println(docDBRooms["rooms"].as<JsonArray>());
+    Serial.println("Full JSON:");
+    Serial.println(docDBRooms.as<JsonArray>());
+
+    JsonArray arr = docDBRooms["rooms"].as<JsonArray>();
+    Serial.println(arr);
+    JsonObject foundRoom;
+    for (JsonObject room : arr) {
+      if (room["id"] == reqRoom) {
+        Serial.println("Ruangan ditemukan: " + reqRoom);
+        Serial.println(room["name"].as<String>());
+        foundRoom = room;
+        break;
+      }
+    }
+
+    if (foundRoom.isNull()) {
+      request->send(404, "application/json", "{\"msg\":\"Ruangan tidak ditemukan\"}");
+      return;
+    }
+
+    String singleRoomJson;
+    serializeJson(foundRoom, singleRoomJson);
+    request->send(200, "application/json", singleRoomJson);
+    return;
+  });
+
+  AsyncCallbackJsonWebHandler *handlerSetSettings = new AsyncCallbackJsonWebHandler("/api/channel", [](AsyncWebServerRequest *request, JsonVariant &json) {
+
+  });
+  server.addHandler(handlerSetSettings);
 }

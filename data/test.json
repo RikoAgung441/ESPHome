@@ -1,0 +1,20 @@
+{
+  "rooms": {
+    "id": "1",
+    "name": "Living Room",
+    "channels": [
+      {
+        "id": 1,
+        "name": "Channel 1",
+        "status": true,
+        "room": 1
+      },
+      {
+        "id": 2,
+        "name": "Channel 2",
+        "status": true,
+        "room": 1
+      }
+    ]
+  }
+}

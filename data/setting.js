@@ -8,7 +8,7 @@ fields.forEach((field) => {
 		const value = field.querySelector("input").value
 
 		try {
-			const res = await fetch("/set", {
+			const res = await fetch("/api/set", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ key, value }),
@@ -16,7 +16,7 @@ fields.forEach((field) => {
 
 			const data = await res.json()
 
-			console.log(data)
+			// console.log(data)
 			if (data.ok) {
 				showToast("Set successfully!")
 			}
@@ -26,16 +26,26 @@ fields.forEach((field) => {
 	})
 })
 
+const setValue = (settings) => {
+	const inputs = document.querySelectorAll("input[data-key]")
+	inputs.forEach((input) => {
+		const key = input.dataset.key
+		if (settings[key]) {
+			input.value = settings[key]
+		}
+	})
+}
+
 const getData = async () => {
 	try {
-		const res = await fetch("/api/settings", {
-			method: "GET",
-			headers: { "Content-Type": "application/json" },
-		})
+		const res = await fetch("/api/settings")
 		const data = await res.json()
-		console.log(data)
+		if (data) {
+			setValue(data)
+		}
+		// console.log(data)
 	} catch (error) {
-		console.log("error test", error)
+		// console.log("error test", error)
 		showToast("Failed to fetch data from server", true)
 	}
 }

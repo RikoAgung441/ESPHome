@@ -2,30 +2,56 @@
 #include "preferences_manager.h"
 #include "server_manager.h"
 #include "connection_config.h"
+#include <SPIFFS.h>
+#include <ArduinoJson.h>
 
 const byte DNS_PORT = 53;
 DNSServer dnsServer;
 
-String ap_ssid = "ESP32_Default";
-String ap_password = "12345678";
+String ap_ssid ;
+String ap_password ;
 
-void connectionInit(){
-  preferences.begin("ap-config", true);
-  ap_ssid = preferences.getString("ssid", "");
-  ap_password = preferences.getString("password", "");
-  preferences.end();
+void connectionInit() {
+  bool success = false;
+  int retryCount = 0;
 
-  if (ap_ssid == "" || ap_password.length() < 8) {
-    ap_ssid = "ESP32_Defaulty";
-    ap_password = "11223344";
-    Serial.println("⚠️ Config kosong, pakai default");
+  while (retryCount < 3 && !success) {
+    File file = SPIFFS.open("/database.json", "r");
+    if (file) {
+      JsonDocument doc; 
+      DeserializationError error = deserializeJson(doc, file);
+      if (!error) {
+        ap_ssid = doc["setting"]["ssid"].as<String>();
+        ap_password = doc["setting"]["password"].as<String>();
+        success = true;
+      } else {
+        Serial.print("❌ Gagal parse JSON: ");
+        Serial.println(error.c_str());
+      }
+      file.close();
+    } else {
+      Serial.println("❌ Gagal buka file ");
+    }
+
+    if (!success) {
+      retryCount++;
+      Serial.printf("🔁 Retry %d/3...\n", retryCount);
+      delay(500);
+    }
+  }
+
+  if (!success) {
+    ap_ssid = "ESP32_Default";
+    ap_password = "12345678";
+    Serial.println("⚠️ Menggunakan SSID & Password default");
   }
 
   if (!WiFi.softAP(ap_ssid.c_str(), ap_password.c_str())) {
-    Serial.println("❌ Gagal start AP, fallback ke default");
-    WiFi.softAP("ESP32_Default", "12345678");
+    Serial.println("❌ Gagal start AP, retry sekali lagi...");
+    delay(1000);
+    WiFi.softAP(ap_ssid.c_str(), ap_password.c_str());
   }
-  // startAPMode();
+
   Serial.print("✅ AP Aktif: ");
   Serial.println(ap_ssid);
   Serial.print("IP: ");
@@ -34,11 +60,12 @@ void connectionInit(){
   dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());
 }
 
+
 void startAPMode(){
   WiFi.softAP(ap_ssid.c_str(), ap_password.c_str());
   Serial.println("AP Mode Aktif");
   Serial.println(WiFi.softAPIP());
-  // ESP.restart();
+  ESP.restart();
 }
 
 void resetToDefault(){
