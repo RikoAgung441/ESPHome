@@ -5,6 +5,7 @@
 #include "spiff_manager.h"
 #include <ArduinoJson.h>
 #include <AsyncJson.h>
+#include "relay_control.h"
 // #include "preferences_manager.h"
 
 AsyncWebServer server(80);
@@ -272,8 +273,88 @@ static void endpointRooms() {
     return;
   });
 
-  AsyncCallbackJsonWebHandler *handlerSetSettings = new AsyncCallbackJsonWebHandler("/api/channel", [](AsyncWebServerRequest *request, JsonVariant &json) {
+  AsyncCallbackJsonWebHandler *handlerSetChannel = new AsyncCallbackJsonWebHandler("/api/channel", [](AsyncWebServerRequest *request, JsonVariant &json) {
 
+    if( !json.is<JsonObject>()) {
+      request->send(400, "application/json", "{\"msg\":\"Data tidak valid\"}");
+      return;
+    }
+
+    JsonObject reqObj = json.as<JsonObject>();
+    int reqRoomId = reqObj["room"];
+    JsonArray reqChannels = reqObj["channels"].as<JsonArray>();
+
+    if (reqRoomId == 0 || reqChannels.isNull() || reqChannels.size() == 0) {
+      request->send(400, "application/json", "{\"msg\":\"Data tidak valid\"}");
+      return;
+    }
+
+    File file = SPIFFS.open("/database.json", "r");
+    if (!file) {
+      request->send(500, "application/json", "{\"msg\":\"Gagal membaca file\"}");
+      return;
+    }
+
+    resJson = file.readString();
+    file.close();
+
+    JsonDocument docDB;
+    DeserializationError err = deserializeJson(docDB, resJson);
+    if (err) {
+      request->send(500, "application/json", "{\"msg\":\"Gagal memproses data\"}");
+      return;
+    }
+
+    JsonArray rooms = docDB["rooms"].as<JsonArray>();
+    JsonObject targetRoom;
+    for (JsonObject room : rooms) {
+      if (room["id"] == reqRoomId) {
+        targetRoom = room;
+        break;
+      }
+    }
+
+    if (targetRoom.isNull()) {
+      request->send(404, "application/json", "{\"msg\":\"Ruangan tidak ditemukan\"}");
+      return;
+    }
+
+    JsonArray targetChannels = targetRoom["channels"].as<JsonArray>();
+    for (JsonObject channel : reqChannels) {
+      for (JsonObject targetChannel : targetChannels) {
+        if (channel["id"] == targetChannel["id"]) {
+          targetChannel["status"] = channel["status"];
+          break;
+        }
+      }
+    }
+
+    serializeJson(docDB, resJson);
+
+    File file2 = SPIFFS.open("/database.json", "w");
+    if (!file2) {
+      request->send(500, "application/json", "{\"msg\":\"Gagal membaca file\"}");
+      return;
+    }
+
+    file2.print(resJson);
+    file2.close();
+
+    // relay control with data pin from to database.json
+    for (JsonObject channel : reqChannels) {
+      Serial.println(channel["pin"].as<int>());
+      Serial.println(channel);
+
+      // if (channel["status"] == true) {
+      //   digitalWrite(relayPin[channel["pin"].as<int>()], HIGH);
+      // } else {
+      //   digitalWrite(relayPin[channel["pin"].as<int>()], LOW);
+      // }
+    }
+
+
+
+    request->send(200, "application/json", "{\"msg\":\"Data berhasil disimpan\"}");
   });
-  server.addHandler(handlerSetSettings);
+  server.addHandler(handlerSetChannel);
 }

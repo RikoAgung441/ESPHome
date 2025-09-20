@@ -106,7 +106,7 @@ const getChannelStatus = () => {
 const getChannel = async () => {
 	try {
 		const room = getIdUrlParams()
-		const response = await fetch("http://localhost:3000/rooms")
+		const response = await fetch("/api/channel?room=" + room)
 		const data = await response.json()
 		// console.log(data)
 
@@ -121,12 +121,12 @@ const getChannel = async () => {
 		}
 		createChannel(data?.channels)
 	} catch (error) {
-		showToast(" Failed to get data", true)
+		showToast(" Failed to get datay", true)
 	}
 }
 
 const setSwitch = async (stateSwitch) => {
-	// console.log(stateSwitch)
+	console.log(stateSwitch)
 	try {
 		const room = getIdUrlParams()
 		const response = await fetch("/api/channel", {
@@ -141,7 +141,7 @@ const setSwitch = async (stateSwitch) => {
 		showToast(data?.message || "Set data successfully")
 		console.log(data)
 	} catch (error) {
-		showToast(" Failed to set data", true)
+		showToast(" Failed to set datay", true)
 	}
 }
 

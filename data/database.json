@@ -8,13 +8,15 @@
           "id": 1,
           "name": "Channel 1",
           "status": true,
-          "room": 1
+          "room": 1,
+          "pin": 2
         },
         {
           "id": 2,
           "name": "Channel 2",
           "status": true,
-          "room": 1
+          "room": 1,
+          "pin": 14
         }
       ]
     },
@@ -26,7 +28,8 @@
           "id": 1,
           "name": "Channel 1",
           "status": false,
-          "room": 2
+          "room": 2,
+          "pin": 27
         }
       ]
     },
@@ -38,7 +41,8 @@
           "id": 1,
           "name": "Channel 1",
           "status": true,
-          "room": 3
+          "room": 3,
+          "pin": 26
         }
       ]
     },
@@ -50,7 +54,8 @@
           "id": 1,
           "name": "Channel 1",
           "status": false,
-          "room": 4
+          "room": 4,
+          "pin": 25
         }
       ]
     }

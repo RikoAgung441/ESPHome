@@ -1,5 +1,4 @@
 #include <WiFi.h>
-#include "preferences_manager.h"
 #include "server_manager.h"
 #include "connection_config.h"
 #include <SPIFFS.h>
@@ -69,9 +68,9 @@ void startAPMode(){
 }
 
 void resetToDefault(){
-  preferences.begin("ap-config", false);
-  preferences.clear();
-  preferences.end();
+  // preferences.begin("ap-config", false);
+  // preferences.clear();
+  // preferences.end();
 
   ap_ssid = "ESP32_Default";
   ap_password = "12345678";
