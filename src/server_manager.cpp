@@ -1,5 +1,5 @@
 #include <server_manager.h>
-#include <SPIFFS.h>
+#include <LittleFS.h>
 #include <FS.h>
 #include "connection_config.h"
 #include "spiff_manager.h"
@@ -12,14 +12,14 @@ AsyncWebServer server(80);
 String resJson;
 
 void webServerInit() {
-  if (!SPIFFS.begin(true)) {
-    Serial.println("SPIFFS gagal mount!");
+  if (!LittleFS.begin(true)) {
+    Serial.println("LittleFS gagal mount!");
   }else{
-    Serial.println("SPIFFS mounted successfully.");
+    Serial.println("LittleFS mounted successfully.");
     listSPIFFSFiles();
   }
 
-  server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
+  server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
 
   endpointSetting();
   endpointRooms();
@@ -44,20 +44,20 @@ void sendJSON(AsyncWebServerRequest *request, int code, const String &json) {
 static void endpointSetting() {
 
   server.on("/setting", HTTP_GET, [](AsyncWebServerRequest *request){
-    if (SPIFFS.exists("/setting.html")) {
-      request->send(SPIFFS, "/setting.html", "text/html");
+    if (LittleFS.exists("/setting.html")) {
+      request->send(LittleFS, "/setting.html", "text/html");
     } else {
-      request->send(404, "text/plain", "Error: file tidak ditemukan di SPIFFS!");
+      request->send(404, "text/plain", "Error: file tidak ditemukan di LittleFS!");
     }
   });
 
   server.on("/api/settings", HTTP_GET, [](AsyncWebServerRequest *request){
-    if (!SPIFFS.exists("/database.json")) {
+    if (!LittleFS.exists("/database.json")) {
       request->send(200, "application/json", "{}");
       return;
     }
 
-    File file = SPIFFS.open("/database.json", "r");
+    File file = LittleFS.open("/database.json", "r");
     if (!file) {
       request->send(500, "application/json", "{\"msg\":\"Gagal membaca file\"}");
       return;
@@ -118,7 +118,7 @@ static void endpointSetting() {
 
 
     JsonDocument docSet;
-    File file = SPIFFS.open("/database.json", "r");
+    File file = LittleFS.open("/database.json", "r");
 
     if (file) {
       DeserializationError error = deserializeJson(docSet, file);
@@ -142,7 +142,7 @@ static void endpointSetting() {
 
     docSet["settings"][key] = value;
 
-    file = SPIFFS.open("/database.json", "w");
+    file = LittleFS.open("/database.json", "w");
     if (!file) {
       request->send(500, "application/json", "{\"msg\":\"Gagal menulis file\"}");
       return;
@@ -164,20 +164,20 @@ static void endpointSetting() {
 
 static void endpointRooms() {
   server.on("/room", HTTP_GET, [](AsyncWebServerRequest *request){
-    if (SPIFFS.exists("/room.html")) {
-      request->send(SPIFFS, "/room.html", "text/html");
+    if (LittleFS.exists("/room.html")) {
+      request->send(LittleFS, "/room.html", "text/html");
     } else {
-      request->send(404, "text/plain", "Error: file tidak ditemukan di SPIFFS!");
+      request->send(404, "text/plain", "Error: file tidak ditemukan di LittleFS!");
     }
   });
 
   server.on("/api/rooms", HTTP_GET, [](AsyncWebServerRequest *request){
-    if (!SPIFFS.exists("/database.json")) {
+    if (!LittleFS.exists("/database.json")) {
       request->send(200, "application/json", "[]");
       return;
     }
 
-    File file = SPIFFS.open("/database.json", "r");
+    File file = LittleFS.open("/database.json", "r");
     if (!file) {
       request->send(500, "application/json", "{\"msg\":\"Gagal membaca file\"}");
       return;
@@ -217,12 +217,12 @@ static void endpointRooms() {
       Serial.println("ID: " + reqRoom);
     }
 
-    if (!SPIFFS.exists("/database.json")) {
+    if (!LittleFS.exists("/database.json")) {
       request->send(200, "application/json", "[]");
       return;
     }
 
-    File file = SPIFFS.open("/database.json", "r");
+    File file = LittleFS.open("/database.json", "r");
     if (!file) {
       request->send(500, "application/json", "{\"msg\":\"Gagal membaca file\"}");
       return;
@@ -284,42 +284,63 @@ static void endpointRooms() {
     int reqRoomId = reqObj["room"];
     JsonArray reqChannels = reqObj["channels"].as<JsonArray>();
 
-    if (reqRoomId == 0 || reqChannels.isNull() || reqChannels.size() == 0) {
-      request->send(400, "application/json", "{\"msg\":\"Data tidak valid\"}");
+    Serial.println("Request channel received");
+    Serial.print("Room ID: "); Serial.println(reqRoomId);
+    Serial.print("Channels: "); Serial.println(reqChannels.size());
+    // Serial.println(reqChannels[]);
+
+    // if (reqRoomId == 0 || reqChannels.isNull() || reqChannels.size() == 0) {
+    //   request->send(400, "application/json", "{\"msg\":\"Data tidak valid\"}");
+    //   return;
+    // }
+
+    if (!LittleFS.exists("/database.json")) {
+      request->send(200, "application/json", "[]");
       return;
     }
 
-    File file = SPIFFS.open("/database.json", "r");
+    File file = LittleFS.open("/database.json", "r");
     if (!file) {
       request->send(500, "application/json", "{\"msg\":\"Gagal membaca file\"}");
       return;
     }
 
     resJson = file.readString();
+    // Serial.println("Data dari file:");
+    // Serial.println(resJson);
     file.close();
 
-    JsonDocument docDB;
-    DeserializationError err = deserializeJson(docDB, resJson);
+
+    JsonDocument docDBRooms;
+    DeserializationError err = deserializeJson(docDBRooms, resJson);
     if (err) {
       request->send(500, "application/json", "{\"msg\":\"Gagal memproses data\"}");
       return;
     }
 
-    JsonArray rooms = docDB["rooms"].as<JsonArray>();
-    JsonObject targetRoom;
-    for (JsonObject room : rooms) {
-      if (room["id"] == reqRoomId) {
-        targetRoom = room;
+    // Serial.println("Data rooms:");
+    // Serial.println(docDBRooms["rooms"].as<JsonArray>());
+    // Serial.println("Full JSON:");
+    // Serial.println(docDBRooms.as<JsonArray>());
+
+    JsonArray arr = docDBRooms["rooms"].as<JsonArray>();
+    // Serial.println(arr);
+    JsonObject foundRoom;
+    for (JsonObject room : arr) {
+      if (room["id"] == String(reqRoomId)) {
+        // Serial.println("Ruangan ditemukan: " + String(reqRoomId));
+        // Serial.println(room["name"].as<String>());
+        foundRoom = room;
         break;
       }
     }
 
-    if (targetRoom.isNull()) {
+    if (foundRoom.isNull()) {
       request->send(404, "application/json", "{\"msg\":\"Ruangan tidak ditemukan\"}");
       return;
     }
 
-    JsonArray targetChannels = targetRoom["channels"].as<JsonArray>();
+    JsonArray targetChannels = foundRoom["channels"].as<JsonArray>();
     for (JsonObject channel : reqChannels) {
       for (JsonObject targetChannel : targetChannels) {
         if (channel["id"] == targetChannel["id"]) {
@@ -329,9 +350,9 @@ static void endpointRooms() {
       }
     }
 
-    serializeJson(docDB, resJson);
+    serializeJson(docDBRooms, resJson);
 
-    File file2 = SPIFFS.open("/database.json", "w");
+    File file2 = LittleFS.open("/database.json", "w");
     if (!file2) {
       request->send(500, "application/json", "{\"msg\":\"Gagal membaca file\"}");
       return;
@@ -340,16 +361,18 @@ static void endpointRooms() {
     file2.print(resJson);
     file2.close();
 
-    // relay control with data pin from to database.json
     for (JsonObject channel : reqChannels) {
-      Serial.println(channel["pin"].as<int>());
-      Serial.println(channel);
-
-      // if (channel["status"] == true) {
-      //   digitalWrite(relayPin[channel["pin"].as<int>()], HIGH);
-      // } else {
-      //   digitalWrite(relayPin[channel["pin"].as<int>()], LOW);
-      // }
+      Serial.print("Channel ID: "); Serial.print(channel["id"].as<int>());
+      Serial.print(" - Status: "); Serial.println(channel["status"].as<bool>());
+      for (JsonObject targetChannel : targetChannels) {
+        if (channel["id"] == targetChannel["id"]) {
+          int pin = targetChannel["pin"];
+          Serial.print(" - Pin: "); Serial.println(pin);
+          relaySwitch(pin, channel["status"].as<bool>());
+          break;
+        }
+      }
+      // relaySwitch(channel["id"].as<int>(), channel["status"].as<bool>());
     }
 
 

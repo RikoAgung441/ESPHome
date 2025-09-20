@@ -1,7 +1,7 @@
 #include <WiFi.h>
 #include "server_manager.h"
 #include "connection_config.h"
-#include <SPIFFS.h>
+#include <LittleFS.h>
 #include <ArduinoJson.h>
 
 const byte DNS_PORT = 53;
@@ -15,7 +15,7 @@ void connectionInit() {
   int retryCount = 0;
 
   while (retryCount < 3 && !success) {
-    File file = SPIFFS.open("/database.json", "r");
+    File file = LittleFS.open("/database.json", "r");
     if (file) {
       JsonDocument doc; 
       DeserializationError error = deserializeJson(doc, file);

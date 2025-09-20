@@ -106,7 +106,7 @@ const getChannelStatus = () => {
 const getChannel = async () => {
 	try {
 		const room = getIdUrlParams()
-		const response = await fetch("/api/channel?room=" + room)
+		const response = await fetch("/api/room?id=" + room)
 		const data = await response.json()
 		// console.log(data)
 
@@ -141,11 +141,13 @@ const setSwitch = async (stateSwitch) => {
 		showToast(data?.message || "Set data successfully")
 		console.log(data)
 	} catch (error) {
+		console.log(error)
 		showToast(" Failed to set datay", true)
 	}
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+	console.log("Document loaded")
 	setTitle()
 	getChannel()
 })

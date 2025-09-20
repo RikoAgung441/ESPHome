@@ -2,6 +2,7 @@
 #include <WiFi.h>
 #include <server_manager.h>
 #include <connection_config.h>
+#include <LittleFS.h>
 // #include <relay_control.h>
 
 
@@ -46,6 +47,9 @@ void setup() {
     pinMode(relayPin[i], OUTPUT);
     digitalWrite(relayPin[i], LOW); // Matikan semua relay saat start
   }
+
+  // LittleFS.format();
+
 
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), handleButton, CHANGE);
 

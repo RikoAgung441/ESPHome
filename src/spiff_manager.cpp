@@ -1,9 +1,9 @@
 #include "spiff_manager.h"
-#include <SPIFFS.h>
+#include <LittleFS.h>
 
 void listSPIFFSFiles() {
-  Serial.println("Daftar file di SPIFFS:");
-  File root = SPIFFS.open("/");
+  Serial.println("Daftar file di LittleFS:");
+  File root = LittleFS.open("/");
   File file = root.openNextFile();
   while (file) {
     Serial.print("  ");
