@@ -8,7 +8,7 @@
 
 #define BUTTON_PIN 12   // Tombol BOOT (GPIO)
 #define LED_PIN 2      // LED indikator
-int relayPin[5] = {2,14, 27, 26, 25}; // Relay control pins
+int relayPin[5] = {2,5, 4, 18, 19}; // Relay control pins
 
 volatile bool buttonInterrupt = false;
 unsigned long buttonPressTime = 0;
@@ -43,7 +43,7 @@ void setup() {
   pinMode(LED_PIN, OUTPUT);
   pinMode(BUTTON_PIN, INPUT_PULLUP);
 
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < 5; i++) {
     pinMode(relayPin[i], OUTPUT);
     digitalWrite(relayPin[i], LOW); // Matikan semua relay saat start
   }
