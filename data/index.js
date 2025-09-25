@@ -39,18 +39,30 @@ const getRooms = async () => {
 	}
 }
 
-const getSettings = async () => {
-	try {
-		const response = await fetch("http://localhost:3000/settings")
-		const data = await response.json()
-		document.getElementById("ssid").innerText = data.ssid || ""
-		document.getElementById("password").innerText = data.password || ""
-	} catch (error) {
-		showToast("Error fetching settings", true)
+// const getSettings = async () => {
+// 	try {
+// 		const response = await fetch("http://localhost:3000/settings")
+// 		const data = await response.json()
+// 		document.getElementById("ssid").innerText = data.ssid || ""
+// 		document.getElementById("password").innerText = data.password || ""
+// 	} catch (error) {
+// 		showToast("Error fetching settings", true)
+// 	}
+// }
+
+socket.onmessage = (event) => {
+	const msg = JSON.parse(event.data)
+	if (msg.event === "pzem-update") {
+		// output.textContent = JSON.stringify(msg.data, null, 2)
+		console.log(msg.data)
 	}
 }
 
+document.getElementById("btnRelay").addEventListener("click", () => {
+	ws.send(JSON.stringify({ event: "toggleRelay", data: {} }))
+})
+
 document.addEventListener("DOMContentLoaded", () => {
 	getRooms()
-	getSettings()
+	// getSettings()
 })

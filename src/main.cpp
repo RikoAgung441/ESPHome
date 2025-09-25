@@ -3,6 +3,8 @@
 #include <server_manager.h>
 #include <connection_config.h>
 #include <LittleFS.h>
+#include <web_sockets.h>
+#include <spiff_manager.h>
 // #include <relay_control.h>
 
 
@@ -53,8 +55,10 @@ void setup() {
 
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), handleButton, CHANGE);
 
+  initLittleFS();
   connectionInit();
   webServerInit();
+  initWebSocket(server);
 }
 
 
@@ -86,8 +90,8 @@ void loop() {
   }
 }
 
-void relayControl(int relayIndex, bool state) {
-  if (relayIndex < 1 || relayIndex > 4) return; // Validasi index
-    digitalWrite(relayPin[relayIndex-1], state ? HIGH : LOW);
-    Serial.printf("Relay %d %s\n", relayIndex, state ? "ON" : "OFF");
-}
+// void relayControl(int relayIndex, bool state) {
+//   if (relayIndex < 1 || relayIndex > 4) return; // Validasi index
+//     digitalWrite(relayPin[relayIndex-1], state ? HIGH : LOW);
+//     Serial.printf("Relay %d %s\n", relayIndex, state ? "ON" : "OFF");
+// }
