@@ -5,12 +5,8 @@
 #include <LittleFS.h>
 #include <web_sockets.h>
 #include <spiff_manager.h>
-// #include <relay_control.h>
-
-
-#define BUTTON_PIN 12   // Tombol BOOT (GPIO)
-#define LED_PIN 2      // LED indikator
-int relayPin[5] = {2,5, 4, 18, 19}; // Relay control pins
+#include <pins_config.h>
+#include <pzem_config.h>
 
 volatile bool buttonInterrupt = false;
 unsigned long buttonPressTime = 0;
@@ -64,12 +60,10 @@ void setup() {
 
 // ====== Loop ======
 void loop() {
-  // Jalankan web server
   dnsServer.processNextRequest();
 
-  
+  broadcastPzemData();
 
-  // Reset ke default jika tombol > 5 detik
   if (buttonHeld && (millis() - buttonPressTime > 5000)) {
     buttonHeld = false;
     resetToDefault();

@@ -13,6 +13,7 @@ const setTitle = () => {
 }
 
 const createChannel = (channels) => {
+	channelContainers.innerHTML = ""
 	channels.forEach((channel) => {
 		const id = channel.id
 		const name = channel.name || `Channel ${id}`
@@ -49,7 +50,6 @@ const createChannel = (channels) => {
 const arrSwitchOn = []
 
 const switchChange = (el, id) => {
-	console.log(el.checked, id)
 	if (el.checked && !arrSwitchOn.includes(id)) {
 		arrSwitchOn.push(id)
 	} else if (!el.checked && arrSwitchOn.includes(id)) {
@@ -105,41 +105,33 @@ const getChannelStatus = () => {
 
 const getChannel = async () => {
 	try {
-		const room = getIdUrlParams()
-		const response = await fetch("/api/room?id=" + room)
-		const data = await response.json()
-		// console.log(data)
+		ws.on("connected", () => {
+			ws.send("get-room", {})
+			ws.on("room-data", (data) => {
+				data = data?.room
+				if (data?.channels?.length >= 0) {
+					totalChannels = data.channels.length
 
-		if (data?.channels?.length >= 0) {
-			totalChannels = data?.channels.length
-			if (data.channels.some((ch) => ch.status)) {
-				arrSwitchOn.push(
-					...data.channels.filter((ch) => ch.status).map((ch) => ch.id)
-				)
-				changeAll(arrSwitchOn.length)
-			}
-		}
-		createChannel(data?.channels)
+					arrSwitchOn.length = 0
+					arrSwitchOn.push(
+						...data.channels.filter((ch) => ch.status).map((ch) => ch.id)
+					)
+
+					changeAll(arrSwitchOn.length)
+				}
+
+				createChannel(data?.channels)
+			})
+		})
 	} catch (error) {
 		showToast(" Failed to get datay", true)
 	}
 }
 
 const setSwitch = async (stateSwitch) => {
-	console.log(stateSwitch)
 	try {
 		const room = getIdUrlParams()
-		const response = await fetch("/api/channel", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ room, channels: stateSwitch }),
-		})
-		const data = await response.json()
-		if (!response.ok) {
-			throw new Error(data?.message || "Failed to set data")
-		}
-		showToast(data?.message || "Set data successfully")
-		console.log(data)
+		ws.send("switch-channel", { room, channels: stateSwitch })
 	} catch (error) {
 		console.log(error)
 		showToast(" Failed to set datay", true)
@@ -147,7 +139,6 @@ const setSwitch = async (stateSwitch) => {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-	console.log("Document loaded")
 	setTitle()
 	getChannel()
 })

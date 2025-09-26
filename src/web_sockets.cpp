@@ -1,19 +1,9 @@
 #include "web_sockets.h"
 #include <map>
+#include "pzem_config.h"
 
 AsyncWebSocket ws("/ws");
-
-std::map<String, EventHandler> eventHandlers;
-
-void on(const String &eventName, EventHandler handler) {
-  eventHandlers[eventName] = handler;
-}
-
-void emit(const String &eventName, AsyncWebSocketClient *client, JsonVariant data) {
-  if (eventHandlers.count(eventName)) {
-    eventHandlers[eventName](client, data);
-  }
-}
+EventEmitter wsEvents;
 
 void broadcast(const String &eventName, JsonVariant data) {
   JsonDocument doc;
@@ -48,11 +38,26 @@ static void onWsEvent(AsyncWebSocket *server,
 
     String eventName = doc["event"].as<String>();
     JsonVariant eventData = doc["data"];
-    emit(eventName, client, eventData);
+    wsEvents.emit(eventName, eventData, client);
   }
 }
 
 void initWebSocket(AsyncWebServer &server) {
   ws.onEvent(onWsEvent);
   server.addHandler(&ws);
+
+  // Serial.println("WebSocket Initialized");
+  setupWebSocketHandlers();
+}
+
+
+// ==================== hanlers =================
+
+void setupWebSocketHandlers() {
+  wsEvents.on("ping", [](JsonVariant data, AsyncWebSocketClient *client) {
+    Serial.println("Received ping event");
+    if (client) {
+      client->text("pong");
+    }
+  });
 }

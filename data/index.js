@@ -1,3 +1,5 @@
+// const { randomInt } = require("crypto")
+
 function goToRoom(element) {
 	const roomNumber = element.dataset.room
 	window.location.href = `room.html?room=${roomNumber}`
@@ -9,7 +11,9 @@ function goToSetting() {
 
 const getRooms = async () => {
 	try {
-		const response = await fetch("/api/rooms")
+		// const response = await fetch("/api/rooms")
+		const response = await fetch("http://localhost:3000/rooms")
+
 		const data = await response.json()
 		console.log(data)
 		const roomContainers = document.getElementById("rooms_container")
@@ -39,30 +43,49 @@ const getRooms = async () => {
 	}
 }
 
-// const getSettings = async () => {
-// 	try {
-// 		const response = await fetch("http://localhost:3000/settings")
-// 		const data = await response.json()
-// 		document.getElementById("ssid").innerText = data.ssid || ""
-// 		document.getElementById("password").innerText = data.password || ""
-// 	} catch (error) {
-// 		showToast("Error fetching settings", true)
-// 	}
-// }
-
-socket.onmessage = (event) => {
-	const msg = JSON.parse(event.data)
-	if (msg.event === "pzem-update") {
-		// output.textContent = JSON.stringify(msg.data, null, 2)
-		console.log(msg.data)
-	}
+const updatePzemData = (data) => {
+	if (!data) return
+	const keys = Object.keys(data)
+	keys.forEach((key) => {
+		const element = document.querySelector(`[data-key="${key}"]`)
+		if (element) {
+			element.textContent = `${data[key]} ${
+				key === "voltage"
+					? "V"
+					: key === "current"
+					? "A"
+					: key === "power"
+					? "W"
+					: key === "energy"
+					? "kWh"
+					: ""
+			}`
+		}
+	})
 }
-
-document.getElementById("btnRelay").addEventListener("click", () => {
-	ws.send(JSON.stringify({ event: "toggleRelay", data: {} }))
-})
 
 document.addEventListener("DOMContentLoaded", () => {
 	getRooms()
+
+	ws.on("pzem-update", (data) => {
+		updatePzemData(data)
+		console.log("PZEM Update:", data)
+	})
+
+	// ws.on("settings", (data) => {
+	// 	console.log("Settings:", data)
+	// })
+
+	// const interval = setInterval(() => {
+	// 	ws.send("get-settings", {
+	// 		room: Math.random(2).toFixed(2),
+	// 		channel: Math.random(2).toFixed(2),
+	// 	})
+	// }, 2000)
+
+	// ws.on("disconnected", () => {
+	// 	showToast("Disconnected", true)
+	// 	clearInterval(interval)
+	// })
 	// getSettings()
 })

@@ -30,14 +30,22 @@
             <!-- <div class="circle_icon">
             </div> -->
           </div>
-          <div class="information_content">
-            <div class="information_ssid">
-              <h3>Wifi SSID</h3>
-              <span class="ssid" id="ssid">-</span>
+          <div class="information_content_container">
+            <div class="information_content">
+              <p class="information_title">Volt</p>
+              <span data-key="voltage">-</span>
             </div>
-            <div class="information_password">
-              <h3>Wifi Password</h3>
-              <span class="password" id="password">-</span>
+            <div class="information_content">
+              <p class="information_title">Current</p>
+              <span data-key="current">-</span>
+            </div>
+            <div class="information_content">
+              <p class="information_title">Watt</p>
+              <span data-key="power">-</span>
+            </div>
+            <div class="information_content">
+              <p class="information_title">Energy</p>
+              <span data-key="energy">-</span>
             </div>
           </div>
         </div>
@@ -53,7 +61,7 @@
       </footer>
       <div id="toast-container"></div>
     </div>
-    <script src="toast.js"></script>
+    <script src="global.js"></script>
     <script src="index.js">
     </script>
   </body>
