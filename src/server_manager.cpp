@@ -1,129 +1,147 @@
 #include <server_manager.h>
-#include <SPIFFS.h>
+#include <LittleFS.h>
 #include <FS.h>
 #include "connection_config.h"
-// #include "spiff_manager.h"
+#include "spiff_manager.h"
 #include <ArduinoJson.h>
 #include <AsyncJson.h>
-#include "preferences_manager.h"
+#include "relay_control.h"
+#include "helper.h"
+
 
 AsyncWebServer server(80);
 
-// void listSPIFFSFiles() {
-//   Serial.println("Daftar file di SPIFFS:");
-//   File root = SPIFFS.open("/");
-//   File file = root.openNextFile();
-//   while (file) {
-//     Serial.print("  ");
-//     Serial.print(file.name());
-//     Serial.print(" (");
-//     Serial.print(file.size());
-//     Serial.println(" bytes)");
-//     file = root.openNextFile();
-//   }
-// }
-
 void webServerInit() {
-  if (!SPIFFS.begin(true)) {
-    Serial.println("SPIFFS gagal mount!");
-  }
+  server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
 
-  // handlerReqBody();
-  server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
-  
-  server.on("/wifi_configuration", HTTP_GET, [](AsyncWebServerRequest *request){
-    if (SPIFFS.exists("/wifi_config.html")) {
-      request->send(SPIFFS, "/wifi_config.html", "text/html");
-    } else {
-      request->send(404, "text/plain", "Error: /wifi_config.html tidak ditemukan di SPIFFS!");
-    }
-  });
-  // server.on("/save", HTTP_POST, handleSave);
+  endpointSetting();
+  endpointRooms();
 
   server.on("/hello", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(200, "text/plain", "Hello, World!");
-  });
-
-  server.on("/api/test", HTTP_POST, [](AsyncWebServerRequest *request){
-    preferences.begin("test", true); // read-only
-    String ssid = preferences.getString("ssid", "");
-    Serial.println(ssid);
-    preferences.end();
-
-    JsonDocument doc;
-    doc["success"] = true;
-    doc["ssid"] = ssid;
-
-    String json;
-    serializeJson(doc, json);
-    // request->send(200, "application/json", "{\"success\":true}");
-    request->send(200, "application/json", json);
   });
 
   server.onNotFound([](AsyncWebServerRequest *request){
     request->send(404, "text/plain", "404: Not found");
   });
 
-  AsyncCallbackJsonWebHandler *handler = new AsyncCallbackJsonWebHandler("/save", [](AsyncWebServerRequest *request, JsonVariant &json) {
-    JsonObject obj = json.as<JsonObject>();
-    String key = obj["key"];
-    String value = obj["value"];
-    Serial.printf("KEY: %s, VALUE: %s\n", key.c_str(), value.c_str());
-    preferences.begin("test", false);
-    preferences.putString(key.c_str(), value);
-    preferences.end();
-    request->send(200, "application/json", "{\"msg\":\"Data diterima\"}");
-  });
-
-  server.addHandler(handler);
-
   server.begin();
   Serial.println("Web server started!");
   
 }
 
-void sendJSON(AsyncWebServerRequest *request, int code, const String &json) {
-  request->send(code, "application/json", json);
+static void endpointSetting() {
+
+  server.on("/setting", HTTP_GET, [](AsyncWebServerRequest *request){
+    if (LittleFS.exists("/setting.html")) {
+      request->send(LittleFS, "/setting.html", "text/html");
+    } else {
+      request->send(404, "text/plain", "Error: file tidak ditemukan di LittleFS!");
+    }
+  });
+
+  server.on("/api/settings", HTTP_GET, [](AsyncWebServerRequest *request){
+    if (!LittleFS.exists("/database.json")) {
+      request->send(200, "application/json", "{}");
+      return;
+    }
+
+    JsonDocument docDBSetting;
+
+    if (!loadJsonFromFile("/database.json", docDBSetting)) {
+      request->send(500, "application/json", "{\"msg\":\"Gagal membaca database\"}");
+      return;
+    }
+
+    JsonObject settingObj = docDBSetting["settings"].as<JsonObject>();
+    String resJson;
+    serializeJson(settingObj, resJson);
+    // file.close();
+
+    request->send(200, "application/json", resJson);
+  });
 }
 
+static void endpointRooms() {
+  server.on("/room", HTTP_GET, [](AsyncWebServerRequest *request){
+    if (LittleFS.exists("/room.html")) {
+      request->send(LittleFS, "/room.html", "text/html");
+    } else {
+      request->send(404, "text/plain", "Error: file tidak ditemukan di LittleFS!");
+    }
+  });
 
+  server.on("/api/rooms", HTTP_GET, [](AsyncWebServerRequest *request){
+    if (!LittleFS.exists("/database.json")) {
+      request->send(200, "application/json", "[]");
+      return;
+    }
+    
+    JsonDocument docDB;
 
-// void handleSave(AsyncWebServerRequest *request) {
-//   Serial.println("🔄 Menyimpan config...");
-//   if (request->method() != HTTP_POST) {
-//     sendJSON(request, 405, "{\"error\":\"Method Not Allowed\"}");
-//     return;
-//   }
-//   if (!request->hasArg("plain")) {
-//     sendJSON(request,400, "{\"error\":\"No body\"}");
-//     return;
-//   }
+    if (!loadJsonFromFile("/database.json", docDB)) {
+      request->send(500, "application/json", "{\"msg\":\"Gagal membaca database\"}");
+      return;
+    }
 
-//   String body = request->arg("plain");
-//   int ssidPos = body.indexOf("\"ssid\"");
-//   int passPos = body.indexOf("\"pass\"");
-//   if (ssidPos < 0 || passPos < 0) {
-//     sendJSON(request, 400, "{\"error\":\"Invalid JSON\"}");
-//     return;
-//   }
+    JsonArray arr = docDB["rooms"].as<JsonArray>();
+    String resJson;
+    serializeJson(arr, resJson);
+    request->send(200, "application/json", resJson);
+  });
 
-//   auto extract = [&](const String& key)->String {
-//     int k = body.indexOf("\"" + key + "\"");
-//     int colon = body.indexOf(":", k);
-//     int firstQuote = body.indexOf("\"", colon + 1);
-//     int secondQuote = body.indexOf("\"", firstQuote + 1);
-//     if (k < 0 || colon < 0 || firstQuote < 0 || secondQuote < 0) return String("");
-//     return body.substring(firstQuote + 1, secondQuote);
-//   };
+  server.on("/api/room", HTTP_GET, [](AsyncWebServerRequest *request){
+    String reqRoom = "";
+    Serial.println("Request room received");
 
-//   String ssid = extract("ssid");
-//   String pass = extract("pass");
+    if (request->hasParam("id")) {
+      Serial.println("Parameter id ditemukan");
+      reqRoom = request->getParam("id")->value();
+      Serial.println("ID: " + reqRoom);
+    }
 
-//   Serial.println("SSID: " + ssid);
-//   Serial.println("PASS: " + pass);
+    if(reqRoom.isEmpty()) {
+      request->send(400, "application/json", "{\"msg\":\"Parameter room diperlukan\"}");
+      return;
+    }
 
-//   sendJSON(request, 200, "{\"ok\":true,\"message\":\"WiFi disimpan, device akan restart...\"}");
-//   delay(500);
-// }
+    if (!LittleFS.exists("/database.json")) {
+      request->send(200, "application/json", "[]");
+      return;
+    }
 
+    JsonDocument docDBRooms;
 
+    if (!loadJsonFromFile("/database.json", docDBRooms)) {
+      request->send(500, "application/json", "{\"msg\":\"Gagal membaca database\"}");
+      return;
+    }
+
+    // Serial.println("Data rooms:");
+    // Serial.println(docDBRooms["rooms"].as<JsonArray>());
+    // Serial.println("Full JSON:");
+    // Serial.println(docDBRooms.as<JsonArray>());
+
+    JsonArray arr = docDBRooms["rooms"].as<JsonArray>();
+    Serial.println(arr);
+    JsonObject foundRoom;
+    for (JsonObject room : arr) {
+      if (room["id"] == reqRoom) {
+        Serial.println("Ruangan ditemukan: " + reqRoom);
+        Serial.println(room["name"].as<String>());
+        foundRoom = room;
+        break;
+      }
+    }
+
+    if (foundRoom.isNull()) {
+      request->send(404, "application/json", "{\"msg\":\"Ruangan tidak ditemukan\"}");
+      return;
+    }
+
+    String resJson;
+    serializeJson(foundRoom, resJson);
+    request->send(200, "application/json", resJson);
+    return;
+  });
+}

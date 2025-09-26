@@ -1,0 +1,67 @@
+{
+  "rooms": [
+    {
+      "id": "1",
+      "name": "Living Room",
+      "channels": [
+        {
+          "id": 1,
+          "name": "Channel 1",
+          "status": true,
+          "room": 1,
+          "pin": 2
+        },
+        {
+          "id": 2,
+          "name": "Channel 2",
+          "status": true,
+          "room": 1,
+          "pin": 4
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "name": "Kitchen",
+      "channels": [
+        {
+          "id": 1,
+          "name": "Channel 1",
+          "status": false,
+          "room": 2,
+          "pin": 5
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "name": "Bedroom",
+      "channels": [
+        {
+          "id": 1,
+          "name": "Channel 1",
+          "status": true,
+          "room": 3,
+          "pin": 18
+        }
+      ]
+    },
+    {
+      "id": "4",
+      "name": "Bathroom",
+      "channels": [
+        {
+          "id": 1,
+          "name": "Channel 1",
+          "status": false,
+          "room": 4,
+          "pin": 19
+        }
+      ]
+    }
+  ],
+  "settings": {
+    "ssid": "MyWiFi",
+    "password": "11223344"
+  }
+}

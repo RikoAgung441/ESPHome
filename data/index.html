@@ -25,15 +25,27 @@
       </header>
       <main class="main_home">
         <div class="card information">
-          <img class="icon_wifi" src="./asset/wifi.png" alt="conection">
-          <div class="information_content">
-            <div class="information_ssid">
-              <h3>Wifi SSID</h3>
-              <span class="ssid">ESP32 Default</span>
+          <div>
+            <img class="icon_wifi" src="./asset/flash.png" alt="conection">
+            <!-- <div class="circle_icon">
+            </div> -->
+          </div>
+          <div class="information_content_container">
+            <div class="information_content">
+              <p class="information_title">Volt</p>
+              <span data-key="voltage">-</span>
             </div>
-            <div class="information_password">
-              <h3>Wifi Password</h3>
-              <span class="password">11223344</span>
+            <div class="information_content">
+              <p class="information_title">Current</p>
+              <span data-key="current">-</span>
+            </div>
+            <div class="information_content">
+              <p class="information_title">Watt</p>
+              <span data-key="power">-</span>
+            </div>
+            <div class="information_content">
+              <p class="information_title">Energy</p>
+              <span data-key="energy">-</span>
             </div>
           </div>
         </div>
@@ -42,65 +54,14 @@
             <h2>List Room</h2>
             <span>See all</span>
           </div>
-          <div class="rooms_container">
-            <button data-room="1" onclick="goToRoom(this)" class="room">
-              <div class="header_room">
-                <div>
-                  <div class="circle_icon">
-                    <img src="./asset/room.svg" alt="room">
-                  </div>
-                </div>
-                <div class="amount_channel">
-                  <h3>Room 1</h3>
-                  <span> 5 channel</span>
-                </div>
-              </div>
-            </button>
-            <button data-room="2" onclick="goToRoom(this)" class="room">
-              <div class="header_room">
-                <div>
-                  <div class="circle_icon">
-                    <img src="./asset/room.svg" alt="room">
-                  </div>
-                </div>
-                <div class="amount_channel">
-                  <h3>Room 2</h3>
-                  <span> 5 channel</span>
-                </div>
-              </div>
-            </button>
-            <button data-room="3" onclick="goToRoom(this)" class="room">
-              <div class="header_room">
-                <div>
-                  <div class="circle_icon">
-                    <img src="./asset/room.svg" alt="room">
-                  </div>
-                </div>
-                <div class="amount_channel">
-                  <h3>Room 3</h3>
-                  <span> 5 channel</span>
-                </div>
-              </div>
-            </button>
-            <button data-room="4" onclick="goToRoom(this)" class="room">
-              <div class="header_room">
-                <div>
-                  <div class="circle_icon">
-                    <img src="./asset/room.svg" alt="room">
-                  </div>
-                </div>
-                <div class="amount_channel">
-                  <h3>Room 4</h3>
-                  <span> 5 channel</span>
-                </div>
-              </div>
-            </button>
-          </div>
+          <div class="rooms_container" id="rooms_container"></div>
         </section>
       </main>
       <footer>
       </footer>
+      <div id="toast-container"></div>
     </div>
+    <script src="global.js"></script>
     <script src="index.js">
     </script>
   </body>

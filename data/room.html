@@ -17,76 +17,26 @@
         <h1 class="title">Room</h1>
       </nav>
       <main class="main_room">
-        <section class="channel_container">
+        <section class="channel_all_container">
           <div class="channel_all">
             <div class="channel_content">
               <div class="channel_name">
-                <h3>Nyalakan Semuanya</h3>
+                <h3>Nyalakan / Matikan Semuanya</h3>
                 <span>Room 1</span>
               </div>
               <label class="switch">
-                <input type="checkbox">
-                <span class="slider"></span>
-              </label>
-            </div>
-          </div>
-          <div class="channel_all">
-            <div class="channel_content">
-              <div class="channel_name">
-                <h3>Matikan Semuanya</h3>
-                <span>Room 1</span>
-              </div>
-              <label class="switch">
-                <input type="checkbox">
+                <input type="checkbox" id="all_on" onclick="toggleAll(this)">
                 <span class="slider"></span>
               </label>
             </div>
           </div>
         </section>
-        <section class="channel_container">
-          <div class="channel">
-            <div class="wrapper_content_channel">
-              <div class="header_channel">
-                <div class="circle_icon">
-                  <img src="./asset/lamp.png" alt="lamp">
-                </div>
-                <span class="status">ON</span>
-              </div>
-              <div class="channel_content">
-                <div class="channel_name">
-                  <h3>Channel channel 1</h3>
-                  <span>Room 1</span>
-                </div>
-                <label class="switch">
-                  <input type="checkbox">
-                  <span class="slider"></span>
-                </label>
-              </div>
-            </div>
-          </div>
-          <div class="channel">
-            <div class="wrapper_content_channel">
-              <div class="header_channel">
-                <div class="circle_icon">
-                  <img src="./asset/lamp.png" alt="lamp">
-                </div>
-                <span class="status">ON</span>
-              </div>
-              <div class="channel_content">
-                <div class="channel_name">
-                  <h3>Channel 2</h3>
-                  <span>Room 1</span>
-                </div>
-                <label class="switch">
-                  <input type="checkbox">
-                  <span class="slider"></span>
-                </label>
-              </div>
-            </div>
-          </div>
+        <section class="channel_container" id="channel_list">
         </section>
       </main>
+      <div id="toast-container"></div>
     </div>
+    <script src="global.js"></script>
     <script src="room.js"></script>
   </body>
 
