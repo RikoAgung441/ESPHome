@@ -1,6 +1,3 @@
-#ifndef SRC_WEB_SOCKETS_H
-#define SRC_WEB_SOCKETS_H
-
 #pragma once
 #include <Arduino.h>
 #include <AsyncTCP.h>
@@ -31,6 +28,5 @@ extern EventEmitter wsEvents;
 
 void initWebSocket(AsyncWebServer &server);
 void broadcast(const String &eventName, JsonVariant data);
+static void setupWebSocketHandlers();
 
-
-#endif //SRC_WEB_SOCKETS_H

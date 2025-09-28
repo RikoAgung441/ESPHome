@@ -105,10 +105,11 @@ const getChannelStatus = () => {
 
 const getChannel = async () => {
 	try {
+		const room = getIdUrlParams()
+
 		ws.on("connected", () => {
-			ws.send("get-room", {})
+			ws.send("get-room", { room })
 			ws.on("room-data", (data) => {
-				data = data?.room
 				if (data?.channels?.length >= 0) {
 					totalChannels = data.channels.length
 
@@ -131,7 +132,19 @@ const getChannel = async () => {
 const setSwitch = async (stateSwitch) => {
 	try {
 		const room = getIdUrlParams()
-		ws.send("switch-channel", { room, channels: stateSwitch })
+		const response = await fetch("/api/channel", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ room, channels: stateSwitch }),
+		})
+		const data = await response.json()
+		if (!response.ok) {
+			throw new Error(data?.message || "Failed to set data")
+		}
+		showToast(data?.message || "Set data successfully")
+
+		// const room = getIdUrlParams()
+		// ws.send("switch-channel", { room, channels: stateSwitch })
 	} catch (error) {
 		console.log(error)
 		showToast(" Failed to set datay", true)

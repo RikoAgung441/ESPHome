@@ -29,3 +29,33 @@ bool loadJsonFromFile(const char *path, JsonDocument &doc) {
 
     return true;
 }
+
+String makeJsonMessageWS(const char* event, const char* msg) {
+    JsonDocument doc;
+    doc["event"] = event;
+    JsonObject data = doc.createNestedObject("data");
+    data["msg"] = msg;
+
+    String output;
+    serializeJson(doc, output);
+    return output;
+}
+
+String makeJsonDataWS(const char* event, JsonVariant data) {
+    JsonDocument doc;
+    doc["event"] = event;
+    doc["data"] = data;
+
+    String output;
+    serializeJson(doc, output);
+    return output;
+}
+
+String makeJsonMessage(const char* msg) {
+    JsonDocument doc;
+    doc["msg"] = msg;
+
+    String output;
+    serializeJson(doc, output);
+    return output;
+}

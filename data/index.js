@@ -11,8 +11,8 @@ function goToSetting() {
 
 const getRooms = async () => {
 	try {
-		// const response = await fetch("/api/rooms")
-		const response = await fetch("http://localhost:3000/rooms")
+		const response = await fetch("/api/rooms")
+		// const response = await fetch("http://localhost:3000/rooms")
 
 		const data = await response.json()
 		console.log(data)
@@ -71,21 +71,4 @@ document.addEventListener("DOMContentLoaded", () => {
 		updatePzemData(data)
 		console.log("PZEM Update:", data)
 	})
-
-	// ws.on("settings", (data) => {
-	// 	console.log("Settings:", data)
-	// })
-
-	// const interval = setInterval(() => {
-	// 	ws.send("get-settings", {
-	// 		room: Math.random(2).toFixed(2),
-	// 		channel: Math.random(2).toFixed(2),
-	// 	})
-	// }, 2000)
-
-	// ws.on("disconnected", () => {
-	// 	showToast("Disconnected", true)
-	// 	clearInterval(interval)
-	// })
-	// getSettings()
 })

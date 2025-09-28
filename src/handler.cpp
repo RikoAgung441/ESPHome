@@ -6,13 +6,14 @@
 #include <AsyncJson.h>
 #include "relay_control.h"
 #include "helper.h"
+#include "web_sockets.h"
 
 
 void handlerSetSettings(){
-   AsyncCallbackJsonWebHandler *handlerSetSettings = new AsyncCallbackJsonWebHandler("/api/set", [](AsyncWebServerRequest *request, JsonVariant &json) {
+  AsyncCallbackJsonWebHandler *handlerSetSettings = new AsyncCallbackJsonWebHandler("/api/set", [](AsyncWebServerRequest *request, JsonVariant &json) {
 
     if (!json.is<JsonObject>()) {
-      request->send(400, "application/json", "{\"msg\":\"Data tidak valid\"}");
+      request->send(400, "application/json", makeJsonMessage("Data tidak valid"));
       return;
     }
 
@@ -21,12 +22,12 @@ void handlerSetSettings(){
     String value = reqObj["value"];
 
     if (key.isEmpty() || value.isEmpty()) {
-      request->send(400, "application/json", "{\"msg\":\"Data tidak valid\"}");
+      request->send(400, "application/json", makeJsonMessage("Data tidak valid"));
       return;
     }
 
     if(key.length() > 15 || value.length() > 50) {
-      request->send(400, "application/json", "{\"msg\":\"Data tidak valid\"}");
+      request->send(400, "application/json", makeJsonMessage("Data tidak valid"));
       return;
     }
 
@@ -40,57 +41,47 @@ void handlerSetSettings(){
     }
 
     if (!allowed) {
-      request->send(400, "application/json", "{\"msg\":\"Data tidak valid\"}");
+      request->send(400, "application/json", makeJsonMessage("Data tidak diizinkan"));
       return;
     }
 
 
-    JsonDocument docSet;
+    JsonDocument docDB;
 
-    if (!loadJsonFromFile("/database.json", docSet)) {
-      request->send(500, "application/json", "{\"msg\":\"Gagal membaca database\"}");
+    if (!loadJsonFromFile("/database.json", docDB)) {
+      request->send(500, "application/json", makeJsonMessage("Gagal membaca database"));
       return;
     }
     
 
-    docSet["settings"][key] = value;
+    docDB["settings"][key] = value;
 
     File file = LittleFS.open("/database.json", "w");
     if (!file) {
-      request->send(500, "application/json", "{\"msg\":\"Gagal menulis file\"}");
+      request->send(500, "application/json", makeJsonMessage("Gagal menulis file"));
       return;
     }
-    serializeJsonPretty(docSet, file);
+    serializeJsonPretty(docDB, file);
     file.close();
+    broadcast("settings-updated", docDB["settings"]);
 
-
-    JsonDocument resContent;
-    resContent["status"] = "success";
-    resContent["msg"] = "Data berhasil disimpan";
-
-    String resJson;
-    serializeJson(resContent, resJson);
-    request->send(200, "application/json", resJson);
+    request->send(200, "application/json", makeJsonMessage("Data berhasil disimpan"));
   });
 
   server.addHandler(handlerSetSettings);
 }
 
 void handlerSwitchChannel(){
-   AsyncCallbackJsonWebHandler *handlerSetChannel = new AsyncCallbackJsonWebHandler("/api/channel", [](AsyncWebServerRequest *request, JsonVariant &json) {
+  AsyncCallbackJsonWebHandler *handlerSetChannel = new AsyncCallbackJsonWebHandler("/api/channel", [](AsyncWebServerRequest *request, JsonVariant &json) {
 
     if( !json.is<JsonObject>()) {
-      request->send(400, "application/json", "{\"msg\":\"Data tidak valid\"}");
+      request->send(400, "application/json", makeJsonMessage("Data tidak valid"));
       return;
     }
 
     JsonObject reqObj = json.as<JsonObject>();
     int reqRoomId = reqObj["room"];
     JsonArray reqChannels = reqObj["channels"].as<JsonArray>();
-
-    // Serial.println("Request channel received");
-    // Serial.print("Room ID: "); Serial.println(reqRoomId);
-    // Serial.print("Channels: "); Serial.println(reqChannels.size());
 
     if (!LittleFS.exists("/database.json")) {
       request->send(200, "application/json", "[]");
@@ -100,14 +91,9 @@ void handlerSwitchChannel(){
     JsonDocument docDBRooms;
 
     if (!loadJsonFromFile("/database.json", docDBRooms)) {
-      request->send(500, "application/json", "{\"msg\":\"Gagal membaca database\"}");
+      request->send(500, "application/json", makeJsonMessage("Gagal membaca database"));
       return;
     }
-
-    // Serial.println("Data rooms:");
-    // Serial.println(docDBRooms["rooms"].as<JsonArray>());
-    // Serial.println("Full JSON:");
-    // Serial.println(docDBRooms.as<JsonArray>());
 
     JsonArray arr = docDBRooms["rooms"].as<JsonArray>();
     JsonObject foundRoom;
@@ -119,47 +105,35 @@ void handlerSwitchChannel(){
     }
 
     if (foundRoom.isNull()) {
-      request->send(404, "application/json", "{\"msg\":\"Ruangan tidak ditemukan\"}");
+      request->send(404, "application/json", makeJsonMessage("Ruangan tidak ditemukan"));
       return;
     }
 
     JsonArray targetChannels = foundRoom["channels"].as<JsonArray>();
+    
     for (JsonObject channel : reqChannels) {
       for (JsonObject targetChannel : targetChannels) {
         if (channel["id"] == targetChannel["id"]) {
           targetChannel["status"] = channel["status"];
-          break;
-        }
-      }
-    }
-
-
-    String newFileContent;
-    serializeJson(docDBRooms, newFileContent);
-
-    File file = LittleFS.open("/database.json", "w");
-    if (!file) {
-      request->send(500, "application/json", "{\"msg\":\"Gagal membaca file\"}");
-      return;
-    }
-
-    file.print(newFileContent);
-    file.close();
-
-    for (JsonObject channel : reqChannels) {
-      Serial.print("Channel ID: "); Serial.print(channel["id"].as<int>());
-      Serial.print(" - Status: "); Serial.println(channel["status"].as<bool>());
-      for (JsonObject targetChannel : targetChannels) {
-        if (channel["id"] == targetChannel["id"]) {
           int pin = targetChannel["pin"];
-          Serial.print(" - Pin: "); Serial.println(pin);
           relaySwitch(pin, channel["status"].as<bool>());
           break;
         }
       }
     }
 
-    request->send(200, "application/json", "{\"msg\":\"Data berhasil disimpan\"}");
+
+    File file = LittleFS.open("/database.json", "w");
+    if (!file) {
+      request->send(500, "application/json", makeJsonMessage("Gagal menulis file"));
+      return;
+    }
+    serializeJson(docDBRooms, file);
+    file.close();
+
+    broadcast("room-data", foundRoom);
+
+    request->send(200, "application/json", makeJsonMessage("Data berhasil disimpan"));
   });
   server.addHandler(handlerSetChannel);
 }

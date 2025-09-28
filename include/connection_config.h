@@ -1,6 +1,4 @@
-#ifndef CONNECTION_CONFIG
-#define CONNECTION_CONFIG
-
+#pragma once
 #include <Arduino.h>
 #include <DNSServer.h>
 
@@ -14,4 +12,3 @@ String wifiManagerGetIP();
 extern String ap_ssid, ap_password;
 extern DNSServer dnsServer;
 
-#endif //CONNECTION_CONFIG

@@ -16,7 +16,6 @@ fields.forEach((field) => {
 
 			const data = await res.json()
 
-			// console.log(data)
 			if (data.ok) {
 				showToast("Set successfully!")
 			}
@@ -38,14 +37,22 @@ const setValue = (settings) => {
 
 const getData = async () => {
 	try {
-		const res = await fetch("/api/settings")
-		const data = await res.json()
+		// const res = await fetch("/api/settings")
+		// const data = await res.json()
+
+		ws.on("connected", () => {
+			ws.send("get-settings", {})
+			ws.on("settings", (data) => {
+				// console.log("settings : ", data.settings)
+				setValue(data.settings)
+			})
+		})
+
 		if (data) {
 			setValue(data)
 		}
 		// console.log(data)
 	} catch (error) {
-		// console.log("error test", error)
 		showToast("Failed to fetch data from server", true)
 	}
 }

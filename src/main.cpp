@@ -52,6 +52,7 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), handleButton, CHANGE);
 
   initLittleFS();
+  // LittleFS.format();  // Hapus semua data
   connectionInit();
   webServerInit();
   initWebSocket(server);

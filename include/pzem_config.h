@@ -1,7 +1,4 @@
-#ifndef PZEM_CONFIG_H
-#define PZEM_CONFIG_H
-/* code */
-
+#pragma once
 #include <PZEM004Tv30.h>
 #include "pins_config.h"
 
@@ -15,8 +12,3 @@ float readPzemEnergy();
 float readPzemFrequency();
 float readPzemPF();
 void broadcastPzemData();
-
-
-
-
-#endif //PZEM_CONFIG_H

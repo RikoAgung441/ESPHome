@@ -1,7 +1,4 @@
-#ifndef HELPER_H
-#define HELPER_H
-/* code */
-
+#pragma once
 #include <Arduino.h>
 #include <LittleFS.h>
 #include <ArduinoJson.h>
@@ -10,6 +7,7 @@
 
 String readJsonFile(const char *path);
 bool loadJsonFromFile(const char *path, JsonDocument &doc);
-// String responseJson()
+String makeJsonMessageWS(const char* event, const char* msg);
+String makeJsonDataWS(const char* event, JsonVariant data);
+String makeJsonMessage(const char* msg);
 
-#endif //HELPER_H

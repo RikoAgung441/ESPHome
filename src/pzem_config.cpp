@@ -82,13 +82,21 @@ float readPzemPF() {
 
 void broadcastPzemData() {
   JsonDocument doc;
-  doc["voltage"] = readPzemVoltage();
-  doc["current"] = readPzemCurrent();
-  doc["power"] = readPzemPower();
-  doc["energy"] = readPzemEnergy();
-  doc["frequency"] = readPzemFrequency();
-  doc["pf"] = readPzemPF();
+  // doc["voltage"] = readPzemVoltage();
+  // doc["current"] = readPzemCurrent();
+  // doc["power"] = readPzemPower();
+  // doc["energy"] = readPzemEnergy();
+  // doc["frequency"] = readPzemFrequency();
+  // doc["pf"] = readPzemPF();
 
-  broadcast("pzem_update", doc);
+  // dummy random data for testing
+  doc["voltage"] = random(2200, 2400) / 10.0;
+  doc["current"] = random(0, 1000) / 100.0;
+  doc["power"] = random(0, 2000) / 1.0;
+  doc["energy"] = random(0, 10000) / 1.0  ;
+  doc["frequency"] = random(490, 510) / 1.0;
+  doc["pf"] = random(0, 100) / 1.0;
+
+  broadcast("pzem-data", doc);
 }
 
