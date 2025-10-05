@@ -10,9 +10,10 @@
 
 
 void handlerSetSettings(){
-  AsyncCallbackJsonWebHandler *handlerSetSettings = new AsyncCallbackJsonWebHandler("/api/set", [](AsyncWebServerRequest *request, JsonVariant &json) {
+   AsyncCallbackJsonWebHandler *handlerSetSettings = new AsyncCallbackJsonWebHandler("/api/set", [](AsyncWebServerRequest *request, JsonVariant &json) {
 
     if (!json.is<JsonObject>()) {
+      Serial.println("Data tidak valid");
       request->send(400, "application/json", makeJsonMessage("Data tidak valid"));
       return;
     }
@@ -22,16 +23,18 @@ void handlerSetSettings(){
     String value = reqObj["value"];
 
     if (key.isEmpty() || value.isEmpty()) {
+      Serial.println("Data tidak valid 2");
       request->send(400, "application/json", makeJsonMessage("Data tidak valid"));
       return;
     }
 
     if(key.length() > 15 || value.length() > 50) {
+      Serial.println("Data length tidak valid");
       request->send(400, "application/json", makeJsonMessage("Data tidak valid"));
       return;
     }
 
-    const char* allowedKeys[] = {"ssid", "password"};
+    const char* allowedKeys[] = {"ssid", "password", "name"};
     bool allowed = false;
     for (const char* k : allowedKeys) {
       if (key.equals(k)) {
@@ -41,6 +44,7 @@ void handlerSetSettings(){
     }
 
     if (!allowed) {
+      Serial.println("Data tidak diizinkan");
       request->send(400, "application/json", makeJsonMessage("Data tidak diizinkan"));
       return;
     }
@@ -72,7 +76,8 @@ void handlerSetSettings(){
 }
 
 void handlerSwitchChannel(){
-  AsyncCallbackJsonWebHandler *handlerSetChannel = new AsyncCallbackJsonWebHandler("/api/channel", [](AsyncWebServerRequest *request, JsonVariant &json) {
+      AsyncCallbackJsonWebHandler *handlerSetChannel = new AsyncCallbackJsonWebHandler("/api/channel", [](AsyncWebServerRequest *request, JsonVariant &json) {
+      Serial.println("Received /api/channel request");
 
     if( !json.is<JsonObject>()) {
       request->send(400, "application/json", makeJsonMessage("Data tidak valid"));

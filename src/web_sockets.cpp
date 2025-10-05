@@ -68,6 +68,7 @@ static void setupWebSocketHandlers() {
     Serial.printf("Client %u requested room %d\n", client->id(), roomId);
 
     if (!LittleFS.exists("/database.json")) {
+      Serial.println("File database.json tidak ditemukan");
       client->text(makeJsonMessageWS("error", "database tidak ditemukan"));
       return;
     }
@@ -75,6 +76,7 @@ static void setupWebSocketHandlers() {
     JsonDocument docDBRooms;
 
     if (!loadJsonFromFile("/database.json", docDBRooms)) {
+      Serial.println("Gagal membaca database.json");
       client->text(makeJsonMessageWS("error", "Gagal membaca database"));
       return;
     }
@@ -82,17 +84,22 @@ static void setupWebSocketHandlers() {
     JsonArray arrRooms = docDBRooms["rooms"].as<JsonArray>();
     JsonObject foundRoom;
     for (JsonObject room : arrRooms) {
-      if (room["id"] == roomId) {
+      if (room["id"] == String(roomId)) {
         foundRoom = room;
         break;
       }
     }
 
     if (foundRoom.isNull()) {
+      Serial.printf("Ruangan dengan ID %d tidak ditemukan\n", roomId);
+
       client->text(makeJsonMessageWS("error", "Ruangan tidak ditemukan"));
       return;
     }
 
+    Serial.println(makeJsonMessageWS("room-data", "test message hello world"));
+
+    Serial.printf("Sending", foundRoom["name"].as<const char*>(), "data to client %u\n", client->id());
     client->text(makeJsonDataWS("room-data", foundRoom) );
   });
 
@@ -100,6 +107,7 @@ static void setupWebSocketHandlers() {
     Serial.printf("Client %u requested settings\n", client->id());
 
     if (!LittleFS.exists("/database.json")) {
+      Serial.println("File database.json tidak ditemukan");
       client->text(makeJsonMessageWS("error", "database tidak ditemukan"));
       return;
     }
@@ -107,12 +115,13 @@ static void setupWebSocketHandlers() {
     JsonDocument docSettings;
 
     if (!loadJsonFromFile("/database.json", docSettings)) {
+      Serial.println("Gagal membaca database.json");
       client->text(makeJsonMessageWS("error", "Gagal membaca settings"));
       return;
     }
 
     JsonObject settingObj = docSettings["settings"].as<JsonObject>();
 
-    client->text(makeJsonDataWS("settings-data", settingObj) );
+    client->text(makeJsonDataWS("settings", settingObj) );
   });
 }

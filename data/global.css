@@ -10,7 +10,8 @@
   --accent-2: #7c9bff;
   --muted: rgba(255, 255, 255, 0.08);
   --soft-white: rgba(255, 255, 255, 0.92);
-  --muted-white: rgba(255, 255, 255, 0.733);
+  --muted-white: rgba(255, 255, 255, 0.486);
+  --bg-glass-gradient: linear-gradient(180deg, var(--card), var(--glass));
 }
 
 * {
@@ -39,6 +40,12 @@ button {
   text-align: start;
 }
 
+input:disabled {
+  background: var(--muted);
+  color: var(--muted-white);
+  cursor: not-allowed;
+}
+
 .navbar {
   height: 3rem;
   border-bottom: 1px solid #ffffff6b;
@@ -55,11 +62,22 @@ button {
   height: 2rem;
 }
 
+.scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--muted-white) transparent;
+}
+
+.scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
 .container {
-  padding: 1.2rem;
+  padding: 1.2rem 1.2rem 2rem 1.2rem;
   max-width: 767px;
   margin: 0 auto;
-  min-height: 100vh;
+  height: 100vh;
+  overflow-y: auto;
   --color: rgba(114, 114, 114, 0.062);
   background-image: linear-gradient(0deg, transparent 24%, var(--color) 25%, var(--color) 26%, transparent 27%, transparent 74%, var(--color) 75%, var(--color) 76%, transparent 77%, transparent),
     linear-gradient(90deg, transparent 24%, var(--color) 25%, var(--color) 26%, transparent 27%, transparent 74%, var(--color) 75%, var(--color) 76%, transparent 77%, transparent);
@@ -81,6 +99,11 @@ button {
 .circle_icon img {
   width: 1.5rem;
   height: 1.5rem;
+}
+
+.btn_icon {
+  width: 1.2rem;
+  height: 1.2rem;
 }
 
 #toast-container {

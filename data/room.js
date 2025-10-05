@@ -106,10 +106,18 @@ const getChannelStatus = () => {
 const getChannel = async () => {
 	try {
 		const room = getIdUrlParams()
+		console.log("Room ID:", room)
 
 		ws.on("connected", () => {
+			// console.log("Connected to WebSocket, requesting room data...")
 			ws.send("get-room", { room })
 			ws.on("room-data", (data) => {
+				console.log("Room Data:", data)
+
+				if (String(room) !== String(data.id)) {
+					return
+				}
+
 				if (data?.channels?.length >= 0) {
 					totalChannels = data.channels.length
 
@@ -122,6 +130,11 @@ const getChannel = async () => {
 				}
 
 				createChannel(data?.channels)
+			})
+
+			ws.on("error", (data) => {
+				console.log(data)
+				showToast(data?.msg || "Failed to get data", true)
 			})
 		})
 	} catch (error) {

@@ -4,10 +4,8 @@
 
 
 void connectionInit();
-void startAPMode();
-void resetToDefault();
-// void handleSave();
-String wifiManagerGetIP();
+void scanNetworks();
+
 
 extern String ap_ssid, ap_password;
 extern DNSServer dnsServer;

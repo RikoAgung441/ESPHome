@@ -33,8 +33,7 @@ bool loadJsonFromFile(const char *path, JsonDocument &doc) {
 String makeJsonMessageWS(const char* event, const char* msg) {
     JsonDocument doc;
     doc["event"] = event;
-    JsonObject data = doc.createNestedObject("data");
-    data["msg"] = msg;
+    doc["data"]["msg"] = msg;
 
     String output;
     serializeJson(doc, output);

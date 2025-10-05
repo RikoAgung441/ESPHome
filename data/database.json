@@ -61,7 +61,14 @@
     }
   ],
   "settings": {
-    "ssid": "MyWiFi",
-    "password": "11223344"
+    "ap_ssid": "ESP32",
+    "ap_wifi_password": "12345678",
+    "sta_ssid": "",
+    "sta_wifi_password": "",
+    "static_ip": "",
+    "gateway": "",
+    "subnet": "255.255.255.0",
+    "dns1": "8.8.8.8",
+    "dns2": "8.8.4.4"
   }
 }

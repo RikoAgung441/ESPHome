@@ -28,8 +28,8 @@ void connectionInit() {
     DeserializationError error = deserializeJson(doc, file);
     file.close();
 
-    ap_ssid = doc["settings"]["ssid"].as<String>();
-    ap_password = doc["settings"]["password"].as<String>();
+    ap_ssid = doc["settings"]["ap_ssid"].as<String>();
+    ap_password = doc["settings"]["ap_wifi_password"].as<String>();
 
     Serial.print("DB SSID: ");
     Serial.println(ap_ssid);
@@ -67,36 +67,32 @@ void connectionInit() {
   Serial.println(WiFi.softAPIP());
 
   dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());
+
+  // scanNetworks();
 }
 
 
-void startAPMode(){
-  WiFi.softAP(ap_ssid.c_str(), ap_password.c_str());
-  Serial.println("AP Mode Aktif");
-  Serial.println(WiFi.softAPIP());
-  ESP.restart();
-}
-
-void resetToDefault(){
-  // preferences.begin("ap-config", false);
-  // preferences.clear();
-  // preferences.end();
-
-  ap_ssid = "ESP32_Defaulty";
-  ap_password = "11223344";
-
-  Serial.println("WiFi config direset ke default!");
-  // blinkLED(2, 300); 
-
-  WiFi.softAPdisconnect(true);
-  delay(500);
-  WiFi.softAP(ap_ssid.c_str(), ap_password.c_str());
-}
-
-
-String wifiManagerGetIP() {
-  if (WiFi.getMode() & WIFI_AP) {
-    return WiFi.softAPIP().toString();
+void scanNetworks() {
+  Serial.println("🔍 Mencari jaringan WiFi...");
+  int n = WiFi.scanNetworks();
+  if (n == 0) {
+    Serial.println("❌ Tidak ada jaringan WiFi ditemukan");
+  } else {
+    Serial.print("✅ Ditemukan ");
+    Serial.print(n);
+    Serial.println(" jaringan WiFi:");
+    for (int i = 0; i < n; ++i) {
+      Serial.print(i + 1);
+      Serial.print(": ");
+      Serial.print(WiFi.SSID(i));
+      Serial.print(" (RSSI: ");
+      Serial.print(WiFi.RSSI(i));
+      Serial.print(" dBm) ");
+      Serial.print((WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? " " : "*");
+      Serial.print(" -- BSSID: ");
+      Serial.print(WiFi.encryptionType(i));
+      Serial.println();
+    }
   }
-  return WiFi.localIP().toString();
+  Serial.println("");
 }

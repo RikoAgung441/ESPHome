@@ -77,5 +77,5 @@ class WSClient extends EventEmitter {
 	}
 }
 
-// const ws = new WSClient(`ws://${window.location.host}/ws`)
-const ws = new WSClient("ws://localhost:8080")
+const ws = new WSClient(`ws://${window.location.host}/ws`)
+// const ws = new WSClient("ws://localhost:8080")

@@ -7,6 +7,8 @@
 #include <AsyncJson.h>
 #include "relay_control.h"
 #include "helper.h"
+#include "web_sockets.h"
+#include "handler.h"
 
 
 AsyncWebServer server(80);
@@ -16,6 +18,8 @@ void webServerInit() {
 
   endpointSetting();
   endpointRooms();
+  handlerSetSettings();
+  handlerSwitchChannel();
 
   server.on("/hello", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(200, "text/plain", "Hello, World!");
@@ -39,6 +43,7 @@ static void endpointSetting() {
       request->send(404, "text/plain", "Error: file tidak ditemukan di LittleFS!");
     }
   });
+
 }
 
 static void endpointRooms() {

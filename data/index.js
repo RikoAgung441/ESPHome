@@ -71,4 +71,9 @@ document.addEventListener("DOMContentLoaded", () => {
 		updatePzemData(data)
 		console.log("PZEM Update:", data)
 	})
+
+	ws.on("error", (error) => {
+		console.log(error)
+		showToast(error?.msg || "Failed to get data", true)
+	})
 })

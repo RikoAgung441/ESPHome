@@ -11,33 +11,119 @@
   </head>
 
   <body>
-    <div class="container">
+    <div class="container scrollbar">
       <nav class="navbar">
         <a href="./index.html" class="btn_back"><img class="icon_back"
             src="./asset/back.png" alt="back"></a>
         <h1>Setting</h1>
       </nav>
       <main class="main_setting">
-        <div class="container_field_form">
-          <label for="ssid">SSID</label>
-          <div class="container_field_input">
-            <input type="text" id="ssid" data-key="ssid"
-              placeholder="Enter your wifi name">
-            <button type="button" class="btn_set" id="btn_set_ssid">Set</button>
+        <form action="">
+          <div class="title_container">
+            <p>AP WIFI</p>
           </div>
-        </div>
-        <div class="container_field_form">
-          <label for="input_wifi_password">Password</label>
-          <div class="container_field_input">
-            <div class="container_input">
-              <input type="password" id="wifi_password" data-key="password"
+          <div class="container_field_form">
+            <label for="ap_ssid">AP SSID</label>
+            <div class="container_field_input">
+              <input type="text" id="ap_ssid" data-key="ap_ssid"
                 placeholder="Enter your wifi name">
-              <img class="input_icon_eye icon" src="./asset/eye_off.svg"
-                alt="eye">
             </div>
-            <button type="button" class="btn_set">Set</button>
           </div>
-        </div>
+          <div class="container_field_form">
+            <label for="ap_wifi_password">AP Password</label>
+            <div class="container_field_input">
+              <div class="container_input">
+                <input type="password" id="ap_wifi_password"
+                  data-key="ap_wifi_password"
+                  placeholder="Enter your wifi name">
+                <button class="btn_icon_eye" id="buttonEyeAP" type="button">
+                  <img class="icon" id="iconEye" src="./asset/eye_off.svg"
+                    alt="eye">
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="title_container">
+            <p>STA WIFI</p>
+          </div>
+          <div class="container_field_form">
+            <label for="sta_ssid">STA SSID</label>
+            <div class="container_field_input">
+              <input type="text" id="sta_ssid" data-key="sta_ssid"
+                placeholder="Enter your SSID">
+              <div class="container_btn_scan">
+                <button type="button" class="btn_scan"
+                  id="btn_scan_sta_ssid">Scan</button>
+                <div class="wifi_nearby  scrollbar">
+                  <div class="wifi_nearby_header">
+                    <p class="wifi_nearby_title">Wifi Sekitar</p>
+                    <button class="btn_close_wifi_nearby" type="button">
+                      <img class="btn_icon" src="./asset/closee.png"
+                        alt="close">
+                    </button>
+                  </div>
+                  <div id="content_wifi_nearby_option"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="container_field_form">
+            <label for="sta_wifi_password">STA Password</label>
+            <div class="container_field_input">
+              <div class="container_input">
+                <input type="password" id="sta_wifi_password"
+                  data-key="sta_wifi_password" placeholder="Enter password">
+                <button class="btn_icon_eye" id="buttonEyeSTA" type="button">
+                  <img class="icon" id="iconEye" src="./asset/eye_off.svg"
+                    alt="eye">
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="container_field_form">
+            <label for="static_ip">Static IP</label>
+            <div class="container_field_input">
+              <input type="text" id="static_ip" data-key="static_ip"
+                data-type="ip" placeholder="192.168.1.xxx" </div>
+            </div>
+            <!-- gateway -->
+            <div class="container_field_form">
+              <label for="gateway">Gateway</label>
+              <div class="container_field_input">
+                <input type="text" id="gateway" data-key="gateway"
+                  data-type="ip" placeholder="192.168.1.xxx">
+              </div>
+            </div>
+            <!-- subnet -->
+            <div class="container_field_form">
+              <label for="subnet">Subnet</label>
+              <div class="container_field_input">
+                <input type="text" id="subnet" data-key="subnet" data-type="ip"
+                  placeholder="255.255.255.xxx">
+              </div>
+            </div>
+            <!-- dns1 -->
+            <div class="container_field_form">
+              <label for="dns1">DNS1</label>
+              <div class="container_field_input">
+                <input type="text" id="dns1" data-key="dns1" data-type="ip"
+                  placeholder="8.8.8.8">
+              </div>
+            </div>
+            <!-- dns2 -->
+            <div class="container_field_form">
+              <label for="dns2">DNS2</label>
+              <div class="container_field_input">
+                <input type="text" id="dns2" data-key="dns2" data-type="ip"
+                  placeholder="8.8.4.4">
+              </div>
+            </div>
+            <div class="container_btn_save_setting">
+              <button type="button" class="btn_save_setting"
+                id="btn_save_setting">Simpan</button>
+              <!-- <button type="button" class="btn_save_setting">Restart</button> -->
+            </div>
+        </form>
       </main>
       <div id="toast-container"></div>
     </div>

@@ -97,6 +97,9 @@ void broadcastPzemData() {
   doc["frequency"] = random(490, 510) / 1.0;
   doc["pf"] = random(0, 100) / 1.0;
 
-  broadcast("pzem-data", doc);
+  // Serial.println("Broadcasting PZEM data:");
+  // serializeJsonPretty(doc, Serial);
+
+  broadcast("pzem-update", doc);
 }
 
