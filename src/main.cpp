@@ -7,6 +7,7 @@
 #include <spiff_manager.h>
 #include <pins_config.h>
 #include <pzem_config.h>
+#include <handler/handler.h>
 
 volatile bool buttonInterrupt = false;
 unsigned long buttonPressTime = 0;
@@ -53,10 +54,10 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), handleButton, CHANGE);
 
   initLittleFS();
-  // LittleFS.format();  // Hapus semua data
   connectionInit();
   webServerInit();
   initWebSocket(server);
+  initHandlers();
 }
 
 

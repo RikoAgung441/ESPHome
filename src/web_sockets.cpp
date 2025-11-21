@@ -47,8 +47,7 @@ static void onWsEvent(AsyncWebSocket *server,
 void initWebSocket(AsyncWebServer &server) {
   ws.onEvent(onWsEvent);
   server.addHandler(&ws);
-
-  // Serial.println("WebSocket Initialized");
+  
   setupWebSocketHandlers();
 }
 
@@ -61,67 +60,5 @@ static void setupWebSocketHandlers() {
     if (client) {
       client->text("pong");
     }
-  });
-
-  wsEvents.on("get-room", [](JsonVariant data, AsyncWebSocketClient *client) {
-    int roomId = data["room"];
-    Serial.printf("Client %u requested room %d\n", client->id(), roomId);
-
-    if (!LittleFS.exists("/database.json")) {
-      Serial.println("File database.json tidak ditemukan");
-      client->text(makeJsonMessageWS("error", "database tidak ditemukan"));
-      return;
-    }
-
-    JsonDocument docDBRooms;
-
-    if (!loadJsonFromFile("/database.json", docDBRooms)) {
-      Serial.println("Gagal membaca database.json");
-      client->text(makeJsonMessageWS("error", "Gagal membaca database"));
-      return;
-    }
-
-    JsonArray arrRooms = docDBRooms["rooms"].as<JsonArray>();
-    JsonObject foundRoom;
-    for (JsonObject room : arrRooms) {
-      if (room["id"] == String(roomId)) {
-        foundRoom = room;
-        break;
-      }
-    }
-
-    if (foundRoom.isNull()) {
-      Serial.printf("Ruangan dengan ID %d tidak ditemukan\n", roomId);
-
-      client->text(makeJsonMessageWS("error", "Ruangan tidak ditemukan"));
-      return;
-    }
-
-    Serial.println(makeJsonMessageWS("room-data", "test message hello world"));
-
-    Serial.printf("Sending", foundRoom["name"].as<const char*>(), "data to client %u\n", client->id());
-    client->text(makeJsonDataWS("room-data", foundRoom) );
-  });
-
-  wsEvents.on("get-settings", [](JsonVariant data, AsyncWebSocketClient *client) {
-    Serial.printf("Client %u requested settings\n", client->id());
-
-    if (!LittleFS.exists("/database.json")) {
-      Serial.println("File database.json tidak ditemukan");
-      client->text(makeJsonMessageWS("error", "database tidak ditemukan"));
-      return;
-    }
-
-    JsonDocument docSettings;
-
-    if (!loadJsonFromFile("/database.json", docSettings)) {
-      Serial.println("Gagal membaca database.json");
-      client->text(makeJsonMessageWS("error", "Gagal membaca settings"));
-      return;
-    }
-
-    JsonObject settingObj = docSettings["settings"].as<JsonObject>();
-
-    client->text(makeJsonDataWS("settings", settingObj) );
   });
 }
