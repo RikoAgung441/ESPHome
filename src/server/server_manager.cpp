@@ -1,13 +1,14 @@
-#include <server_manager.h>
+#include <server/server_manager.h>
 #include <LittleFS.h>
 #include <FS.h>
 #include "connection_config.h"
 #include "spiff_manager.h"
 #include <ArduinoJson.h>
 #include <AsyncJson.h>
-#include "relay_control.h"
+#include <controllers/relay_control.h> 
 #include "helper.h"
-#include "web_sockets.h"
+#include <server/web_sockets.h>
+#include "debug.h"
 
 AsyncWebServer server(80);
 
@@ -24,7 +25,7 @@ void webServerInit(){
                     { request->send(404, "text/plain", "404: Not found"); });
 
   server.begin();
-  Serial.println("Web server started!");
+  LOG_INFO("Web server started!");
 }
 
 static void endpointSetting(){

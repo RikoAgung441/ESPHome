@@ -1,9 +1,9 @@
 #include <Arduino.h>
 #include <WiFi.h>
-#include <server_manager.h>
+#include <server/server_manager.h>
 #include <connection_config.h>
 #include <LittleFS.h>
-#include <web_sockets.h>
+#include <server/web_sockets.h>
 #include <spiff_manager.h>
 #include <pins_config.h>
 #include <pzem_config.h>

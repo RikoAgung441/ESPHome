@@ -4,8 +4,10 @@
 #include <ArduinoJson.h>
 #include <AsyncJson.h>
 #include "helper.h"
-#include "web_sockets.h"
-#include "server_manager.h"
+#include <server/web_sockets.h>
+#include <server/server_manager.h>
+#include "connection_config.h"
+#include "debug.h"
 
 
 void handlerSettings(){
@@ -13,35 +15,36 @@ void handlerSettings(){
   handlerSetSetting();
 }
 
-static void handlerSetting(){
+void handlerSetting(){
   wsEvents.on("get-settings", [](JsonVariant data, AsyncWebSocketClient *client) {
-      Serial.printf("Client %u requested settings\n", client->id());
-  
-      if (!LittleFS.exists("/database.json")) {
-        Serial.println("File database.json tidak ditemukan");
-        client->text(makeJsonMessageWS("error", "database tidak ditemukan"));
-        return;
-      }
-  
-      JsonDocument docSettings;
-  
-      if (!loadJsonFromFile("/database.json", docSettings)) {
-        Serial.println("Gagal membaca database.json");
-        client->text(makeJsonMessageWS("error", "Gagal membaca settings"));
-        return;
-      }
-  
-      JsonObject settingObj = docSettings["settings"].as<JsonObject>();
-  
-      client->text(makeJsonDataWS("settings", settingObj) );
-    });
+    LOG_INFO("Client %u requested settings", client->id());
+
+
+    if (!LittleFS.exists("/database.json")) {
+      LOG_ERROR("File database.json tidak ditemukan");
+      client->text(makeJsonMessageWS("error", "database tidak ditemukan"));
+      return;
+    }
+
+    JsonDocument docSettings;
+
+    if (!loadJsonFromFile("/database.json", docSettings)) {
+      LOG_ERROR("Gagal membaca database.json");
+      client->text(makeJsonMessageWS("error", "Gagal membaca settings"));
+      return;
+    }
+
+    JsonObject settingObj = docSettings["settings"].as<JsonObject>();
+
+    client->text(makeJsonDataWS("settings", settingObj) );
+  });
 }
 
-static void handlerSetSetting(){
+void handlerSetSetting(){
   AsyncCallbackJsonWebHandler *handlerSetSettings = new AsyncCallbackJsonWebHandler("/api/set", [](AsyncWebServerRequest *request, JsonVariant &json) {
 
     if (!json.is<JsonObject>()) {
-      Serial.println("Data tidak valid");
+      LOG_ERROR("Data tidak valid");
       request->send(400, "application/json", makeJsonMessage("Data tidak valid"));
       return;
     }
@@ -51,13 +54,13 @@ static void handlerSetSetting(){
     String value = reqObj["value"];
 
     if (key.isEmpty() || value.isEmpty()) {
-      Serial.println("Data tidak valid 2");
+      LOG_ERROR("Data tidak valid");
       request->send(400, "application/json", makeJsonMessage("Data tidak valid"));
       return;
     }
 
     if(key.length() > 15 || value.length() > 50) {
-      Serial.println("Data length tidak valid");
+      LOG_ERROR("Data tidak valid, panjang key atau value tidak valid");
       request->send(400, "application/json", makeJsonMessage("Data tidak valid"));
       return;
     }
@@ -72,7 +75,7 @@ static void handlerSetSetting(){
     }
 
     if (!allowed) {
-      Serial.println("Data tidak diizinkan");
+      LOG_ERROR("Data tidak diizinkan");
       request->send(400, "application/json", makeJsonMessage("Data tidak diizinkan"));
       return;
     }
@@ -101,4 +104,16 @@ static void handlerSetSetting(){
   });
 
   server.addHandler(handlerSetSettings);
+}
+
+
+void scanNetworkAvailable() {
+  server.on("/scan-network", HTTP_GET, [](AsyncWebServerRequest *request){
+    JsonArray networks = scanNetworks();
+
+    String json;
+    serializeJson(networks, json);
+
+    request->send(200, "application/json", json);
+  });
 }

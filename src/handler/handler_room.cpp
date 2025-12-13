@@ -4,10 +4,11 @@
 #include <ArduinoJson.h>
 #include <AsyncJson.h>
 #include "spiff_manager.h"
-#include "relay_control.h"
+#include <controllers/relay_control.h>
 #include "helper.h"
-#include "web_sockets.h"
-#include "server_manager.h"
+#include <server/web_sockets.h>
+#include <server/server_manager.h>
+#include "debug.h"
 
 
 void handlerRooms(){
@@ -15,13 +16,13 @@ void handlerRooms(){
   hanlderSetChannels();
 }
 
-static void handlerRoom(){
+void handlerRoom(){
   wsEvents.on("get-room", [](JsonVariant data, AsyncWebSocketClient *client) {
     int roomId = data["room"];
-    Serial.printf("Client %u requested room %d\n", client->id(), roomId);
+    LOG_INFO("Client %u requested room %d\n", client->id(), roomId);
 
     if (!LittleFS.exists("/database.json")) {
-      Serial.println("File database.json tidak ditemukan");
+      LOG_ERROR("File database.json tidak ditemukan");
       client->text(makeJsonMessageWS("error", "database tidak ditemukan"));
       return;
     }
@@ -29,7 +30,7 @@ static void handlerRoom(){
     JsonDocument docDBRooms;
 
     if (!loadJsonFromFile("/database.json", docDBRooms)) {
-      Serial.println("Gagal membaca database.json");
+      LOG_ERROR("Gagal membaca database.json");
       client->text(makeJsonMessageWS("error", "Gagal membaca database"));
       return;
     }
@@ -44,22 +45,22 @@ static void handlerRoom(){
     }
 
     if (foundRoom.isNull()) {
-      Serial.printf("Ruangan dengan ID %d tidak ditemukan\n", roomId);
+      LOG_ERROR("Ruangan dengan ID %d tidak ditemukan\n", roomId);
 
       client->text(makeJsonMessageWS("error", "Ruangan tidak ditemukan"));
       return;
     }
 
-    Serial.println(makeJsonMessageWS("room-data", "test message hello world"));
+    // Serial.println(makeJsonMessageWS("room-data", "test message hello world"));
 
-    Serial.printf("Sending", foundRoom["name"].as<const char*>(), "data to client %u\n", client->id());
+    LOG_INFO("Sending", foundRoom["name"].as<const char*>(), "data to client %u\n", client->id());
     client->text(makeJsonDataWS("room-data", foundRoom) );
   });
 }
 
-static void hanlderSetChannels(){
+void hanlderSetChannels(){
   AsyncCallbackJsonWebHandler *handlerSetChannel = new AsyncCallbackJsonWebHandler("/api/channel", [](AsyncWebServerRequest *request, JsonVariant &json){
-    Serial.println("Received /api/channel request");
+    LOG_INFO("Received /api/channel request");
 
     if( !json.is<JsonObject>()) {
       request->send(400, "application/json", makeJsonMessage("Data tidak valid"));

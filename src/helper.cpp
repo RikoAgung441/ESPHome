@@ -1,4 +1,5 @@
 #include "helper.h"
+#include "debug.h"
 
 
 String readJsonFile(const char *path) {
@@ -15,7 +16,7 @@ String readJsonFile(const char *path) {
 bool loadJsonFromFile(const char *path, JsonDocument &doc) {
     File file = LittleFS.open(path, "r");
     if (!file) {
-        Serial.printf("Gagal membuka file: %s\n", path);
+        LOG_INFO("Gagal membuka file: %s\n", path);
         return false;
     }
 
@@ -23,7 +24,7 @@ bool loadJsonFromFile(const char *path, JsonDocument &doc) {
     file.close();
 
     if (error) {
-        Serial.printf("Gagal parse JSON (%s)\n", error.c_str());
+        LOG_INFO("Gagal parse JSON (%s)\n", error.c_str());
         return false;
     }
 

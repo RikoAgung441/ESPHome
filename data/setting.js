@@ -21,22 +21,6 @@ const getData = async () => {
 			})
 		})
 
-		// const dummySettings = {
-		// 	ap_ssid: "ESP32",
-		// 	ap_wifi_password: "12345678",
-		// 	sta_ssid: "Kurnia",
-		// 	sta_wifi_password: "12345678",
-		// 	static_ip: "38.0.101.76",
-		// 	gateway: "38.0.101.76",
-		// 	subnet: "38.0.101.76",
-		// 	dns1: "8.8.8.8",
-		// 	dns2: "8.8.4.4",
-		// }
-
-		// setValue(dummySettings)
-		// if (data) {
-		// }
-
 		ws.on("error", (error) => {
 			console.log(error)
 			showToast(error?.msg || "Failed to get data", true)
@@ -47,7 +31,6 @@ const getData = async () => {
 }
 
 const setValue = (settings) => {
-	// console.log("Settings:", settings)
 	const inputs = document.querySelectorAll("input[data-key]")
 	inputs.forEach((input) => {
 		const key = input.dataset.key

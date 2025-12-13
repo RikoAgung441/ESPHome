@@ -2,5 +2,5 @@
 #include <Arduino.h>
 
 void handlerSettings();
-static void handlerSetting();
-static void handlerSetSetting();
+void handlerSetting();
+void handlerSetSetting();

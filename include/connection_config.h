@@ -4,7 +4,7 @@
 
 
 void connectionInit();
-void scanNetworks();
+JsonArray scanNetworks();
 
 
 extern String ap_ssid, ap_password;

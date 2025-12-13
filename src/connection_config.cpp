@@ -1,14 +1,16 @@
 #include <WiFi.h>
-#include "server_manager.h"
+#include <server/server_manager.h>
 #include "connection_config.h"
 #include <LittleFS.h>
 #include <ArduinoJson.h>
+#include "debug.h"
 
 const byte DNS_PORT = 53;
 DNSServer dnsServer;
 
 String ap_ssid ;
 String ap_password ;
+JsonDocument doc;
 
 void connectionInit() {
   bool success = false;
@@ -61,38 +63,41 @@ void connectionInit() {
     WiFi.softAP("ESP32_Defaulty", "11223344");
   }
 
-  Serial.print("✅ AP Aktif: ");
-  Serial.println(ap_ssid);
-  Serial.print("IP: ");
-  Serial.println(WiFi.softAPIP());
+  LOG_INFO("✅ AP Aktif: ");
+  LOG_INFO("SSID: %s", ap_ssid.c_str());
+  LOG_INFO("IP: %s", WiFi.softAPIP().toString().c_str());
 
   dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());
 
-  // scanNetworks();
+  // run scanNetworks and print value return
+  JsonArray arr = scanNetworks();
+  serializeJsonPretty(arr, Serial);
+  Serial.println();
 }
 
 
-void scanNetworks() {
-  Serial.println("🔍 Mencari jaringan WiFi...");
+
+JsonArray scanNetworks() {
+  doc.clear();
+
+  LOG_INFO("🔍 Mencari jaringan WiFi...");
   int n = WiFi.scanNetworks();
+
+  JsonArray arr = doc.to<JsonArray>();
+
   if (n == 0) {
-    Serial.println("❌ Tidak ada jaringan WiFi ditemukan");
-  } else {
-    Serial.print("✅ Ditemukan ");
-    Serial.print(n);
-    Serial.println(" jaringan WiFi:");
-    for (int i = 0; i < n; ++i) {
-      Serial.print(i + 1);
-      Serial.print(": ");
-      Serial.print(WiFi.SSID(i));
-      Serial.print(" (RSSI: ");
-      Serial.print(WiFi.RSSI(i));
-      Serial.print(" dBm) ");
-      Serial.print((WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? " " : "*");
-      Serial.print(" -- BSSID: ");
-      Serial.print(WiFi.encryptionType(i));
-      Serial.println();
-    }
+    LOG_WARN("Tidak ada jaringan WiFi ditemukan");
+    return arr; // array kosong
   }
-  Serial.println("");
+
+  LOG_INFO("Ditemukan %d jaringan WiFi:", n);
+
+  for (int i = 0; i < n; ++i) {
+    JsonObject netObj = arr.add<JsonObject>();
+    netObj["ssid"] = WiFi.SSID(i);
+    netObj["rssi"] = WiFi.RSSI(i);
+    netObj["encryption"] = (WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? "open" : "secured";
+  }
+
+  return arr;
 }

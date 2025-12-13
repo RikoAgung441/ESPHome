@@ -1,6 +1,7 @@
 #include "pzem_config.h"
-#include "web_sockets.h"
+#include <server/web_sockets.h>
 #include <ArduinoJson.h>
+#include "debug.h"
 
 
 HardwareSerial pzemSerial(2);
@@ -11,11 +12,11 @@ void initPzem() {
   pzemSerial.begin(9600, SERIAL_8N1, PZEM_RX, PZEM_TX);
 
   if(!pzemSerial){
-    Serial.println("PZEM Serial not initialized");
+    LOG_INFO("PZEM Serial not initialized");
     return;
   }
 
-  Serial.println("PZEM Initialized");
+  LOG_INFO("PZEM Initialized");
 
   
 }
@@ -23,7 +24,7 @@ void initPzem() {
 float readPzemVoltage() {
   float voltage = pzem.voltage();
   if(voltage < 0.0){
-    Serial.println("Error reading voltage");
+    LOG_ERROR("Error reading voltage");
     return -1;
   }
 
@@ -33,7 +34,7 @@ float readPzemVoltage() {
 float readPzemCurrent() {
   float current = pzem.current();
   if(current < 0.0){
-    Serial.println("Error reading current");
+    LOG_ERROR("Error reading current");
     return -1;
   }
 
@@ -43,7 +44,7 @@ float readPzemCurrent() {
 float readPzemPower() {
   float power = pzem.power();
   if(power < 0.0){
-    Serial.println("Error reading power");
+    LOG_ERROR("Error reading power");
     return -1;
   }
 
@@ -53,7 +54,7 @@ float readPzemPower() {
 float readPzemEnergy() {
   float energy = pzem.energy();
   if(energy < 0.0){
-    Serial.println("Error reading energy");
+    LOG_ERROR("Error reading energy");
     return -1;
   }
 
@@ -63,7 +64,7 @@ float readPzemEnergy() {
 float readPzemFrequency() {
   float frequency = pzem.frequency();
   if(frequency < 0.0){
-    Serial.println("Error reading frequency");
+    LOG_ERROR("Error reading frequency");
     return -1;
   }
 
@@ -73,7 +74,7 @@ float readPzemFrequency() {
 float readPzemPF() {
   float pf = pzem.pf();
   if(pf < 0.0){
-    Serial.println("Error reading pf");
+    LOG_ERROR("Error reading pf");
     return -1;
   }
 

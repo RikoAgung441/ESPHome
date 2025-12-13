@@ -1,8 +1,9 @@
-#include "web_sockets.h"
+#include <server/web_sockets.h>
 #include <map>
 #include "pzem_config.h"
 #include <LittleFS.h>
 #include "helper.h"
+#include "debug.h"
 
 AsyncWebSocket ws("/ws");
 EventEmitter wsEvents;
@@ -24,9 +25,9 @@ static void onWsEvent(AsyncWebSocket *server,
                 uint8_t *data,
                 size_t len) {
   if (type == WS_EVT_CONNECT) {
-    Serial.printf("WebSocket client %u connected\n", client->id());
+    LOG_INFO("WebSocket client %u connected", client->id());
   } else if (type == WS_EVT_DISCONNECT) {
-    Serial.printf("WebSocket client %u disconnected\n", client->id());
+    LOG_INFO("WebSocket client %u disconnected", client->id());
   } else if (type == WS_EVT_DATA) {
     String msg = "";
     for (size_t i = 0; i < len; i++) msg += (char)data[i];
@@ -34,7 +35,7 @@ static void onWsEvent(AsyncWebSocket *server,
     JsonDocument doc;
     DeserializationError error = deserializeJson(doc, msg);
     if (error) {
-      Serial.println("Invalid JSON");
+      LOG_ERROR("Invalid JSON");
       return;
     }
 
@@ -56,7 +57,7 @@ void initWebSocket(AsyncWebServer &server) {
 
 static void setupWebSocketHandlers() {
   wsEvents.on("ping", [](JsonVariant data, AsyncWebSocketClient *client) {
-    Serial.println("Received ping event");
+    LOG_INFO("Received ping event");
     if (client) {
       client->text("pong");
     }
