@@ -11,7 +11,7 @@ EventEmitter wsEvents;
 void broadcast(const String &eventName, JsonVariant data) {
   JsonDocument doc;
   doc["event"] = eventName;
-  doc["data"] = data;
+  doc["payload"] = data;
 
   String out;
   serializeJson(doc, out);
@@ -34,13 +34,14 @@ static void onWsEvent(AsyncWebSocket *server,
 
     JsonDocument doc;
     DeserializationError error = deserializeJson(doc, msg);
+    LOG_INFO("Received WS message from client %u: %s", client->id(), msg.c_str());
     if (error) {
       LOG_ERROR("Invalid JSON");
       return;
     }
 
     String eventName = doc["event"].as<String>();
-    JsonVariant eventData = doc["data"];
+    JsonVariant eventData = doc["payload"];
     wsEvents.emit(eventName, eventData, client);
   }
 }

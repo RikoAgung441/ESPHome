@@ -96,11 +96,19 @@ void broadcastPzemData() {
   doc["power"] = random(0, 2000) / 1.0;
   doc["energy"] = random(0, 10000) / 1.0  ;
   doc["frequency"] = random(490, 510) / 1.0;
-  doc["pf"] = random(0, 100) / 1.0;
+  doc["powerFactor"] = random(0, 100) / 1.0;
 
   // Serial.println("Broadcasting PZEM data:");
   // serializeJsonPretty(doc, Serial);
+  LOG_INFO("Broadcasting PZEM data: Voltage=%.2fV, Current=%.2fA, Power=%.2fW, Energy=%.2fWh, Frequency=%.2fHz, PF=%.2f",
+           doc["voltage"].as<float>(),
+           doc["current"].as<float>(),
+           doc["power"].as<float>(),
+           doc["energy"].as<float>(),
+           doc["frequency"].as<float>(),
+           doc["pf"].as<float>());
 
-  broadcast("pzem-update", doc);
+           
+  broadcast("pzem:update", doc);
 }
 

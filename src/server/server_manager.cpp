@@ -13,10 +13,17 @@
 AsyncWebServer server(80);
 
 void webServerInit(){
+  DefaultHeaders::Instance().addHeader(
+    "Access-Control-Allow-Origin", "*"
+  );
+  DefaultHeaders::Instance().addHeader(
+    "Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS"
+  );
+  DefaultHeaders::Instance().addHeader(
+    "Access-Control-Allow-Headers", "Content-Type, Authorization"
+  );
   server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
 
-  endpointSetting();
-  endpointRooms();
 
   server.on("/hello", HTTP_GET, [](AsyncWebServerRequest *request)
             { request->send(200, "text/plain", "Hello, World!"); });
@@ -28,42 +35,3 @@ void webServerInit(){
   LOG_INFO("Web server started!");
 }
 
-static void endpointSetting(){
-  server.on("/setting", HTTP_GET, [](AsyncWebServerRequest *request){
-    if (LittleFS.exists("/setting.html")) {
-      request->send(LittleFS, "/setting.html", "text/html");
-    } else {
-      request->send(404, "text/plain", "Error: file tidak ditemukan di LittleFS!");
-    } 
-  });
-}
-
-static void endpointRooms()
-{
-  server.on("/room", HTTP_GET, [](AsyncWebServerRequest *request){
-    if (LittleFS.exists("/room.html")) {
-      request->send(LittleFS, "/room.html", "text/html");
-    } else {
-      request->send(404, "text/plain", "Error: file tidak ditemukan di LittleFS!");
-    } 
-  });
-
-  server.on("/api/rooms", HTTP_GET, [](AsyncWebServerRequest *request){
-    if (!LittleFS.exists("/database.json")) {
-      request->send(200, "application/json", "[]");
-      return;
-    }
-    
-    JsonDocument docDB;
-
-    if (!loadJsonFromFile("/database.json", docDB)) {
-      request->send(500, "application/json", makeJsonMessage("Gagal membaca database"));
-      return;
-    }
-
-    JsonArray arr = docDB["rooms"].as<JsonArray>();
-    String resJson;
-    serializeJson(arr, resJson);
-    request->send(200, "application/json", resJson); 
-  });
-}

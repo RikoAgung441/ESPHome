@@ -44,7 +44,7 @@ String makeJsonMessageWS(const char* event, const char* msg) {
 String makeJsonDataWS(const char* event, JsonVariant data) {
     JsonDocument doc;
     doc["event"] = event;
-    doc["data"] = data;
+    doc["payload"] = data;
 
     String output;
     serializeJson(doc, output);
@@ -53,9 +53,42 @@ String makeJsonDataWS(const char* event, JsonVariant data) {
 
 String makeJsonMessage(const char* msg) {
     JsonDocument doc;
-    doc["msg"] = msg;
+    doc["message"] = msg;
 
     String output;
     serializeJson(doc, output);
     return output;
+}
+
+String getString(JsonObject obj, const char* key) {
+    return obj[key].is<const char*>() ? String(obj[key].as<const char*>()) : "";
+}
+
+bool getBool(JsonObject obj, const char* key, bool def) {
+    return obj[key].is<bool>() ? obj[key].as<bool>() : def;
+}
+
+void generateToken(size_t length) {
+    const char charset[] = "0123456789"
+                           "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                           "abcdefghijklmnopqrstuvwxyz";
+    const size_t max_index = (sizeof(charset) - 1);
+    String token;
+    for (size_t i = 0; i < length; i++) {
+        token += charset[random(0, max_index)];
+    }
+
+    if (!LittleFS.exists("/database.json")) {
+      LOG_ERROR("File database.json tidak ditemukan");
+      return;
+    }
+
+    JsonDocument docDatabase;
+    if (!loadJsonFromFile("/database.json", docDatabase)) {
+      LOG_ERROR("Gagal membaca database.json");
+      return;
+    }
+
+    JsonObject DBConfig = docDatabase["config"].as<JsonObject>();
+    DBConfig["token"] = token;
 }

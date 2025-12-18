@@ -16,7 +16,7 @@ void handlerSettings(){
 }
 
 void handlerSetting(){
-  wsEvents.on("get-settings", [](JsonVariant data, AsyncWebSocketClient *client) {
+  wsEvents.on("get:settings", [](JsonVariant data, AsyncWebSocketClient *client) {
     LOG_INFO("Client %u requested settings", client->id());
 
 
@@ -36,84 +36,88 @@ void handlerSetting(){
 
     JsonObject settingObj = docSettings["settings"].as<JsonObject>();
 
-    client->text(makeJsonDataWS("settings", settingObj) );
+    client->text(makeJsonDataWS("settings:data", settingObj) );
   });
-}
 
-void handlerSetSetting(){
-  AsyncCallbackJsonWebHandler *handlerSetSettings = new AsyncCallbackJsonWebHandler("/api/set", [](AsyncWebServerRequest *request, JsonVariant &json) {
-
-    if (!json.is<JsonObject>()) {
-      LOG_ERROR("Data tidak valid");
-      request->send(400, "application/json", makeJsonMessage("Data tidak valid"));
-      return;
-    }
-
-    JsonObject reqObj = json.as<JsonObject>();
-    String key = reqObj["key"];
-    String value = reqObj["value"];
-
-    if (key.isEmpty() || value.isEmpty()) {
-      LOG_ERROR("Data tidak valid");
-      request->send(400, "application/json", makeJsonMessage("Data tidak valid"));
-      return;
-    }
-
-    if(key.length() > 15 || value.length() > 50) {
-      LOG_ERROR("Data tidak valid, panjang key atau value tidak valid");
-      request->send(400, "application/json", makeJsonMessage("Data tidak valid"));
-      return;
-    }
-
-    const char* allowedKeys[] = {"ssid", "password", "name"};
-    bool allowed = false;
-    for (const char* k : allowedKeys) {
-      if (key.equals(k)) {
-        allowed = true;
-        break;
+  server.on("/api/scan-network", HTTP_GET,
+    [](AsyncWebServerRequest *request) {
+  
+      if (!isWifiScanRunning() && !isWifiScanReady()) {
+        startWifiScan();
+        request->send(200, "application/json",
+          "{\"status\":\"scanning\"}");
+        return;
       }
-    }
-
-    if (!allowed) {
-      LOG_ERROR("Data tidak diizinkan");
-      request->send(400, "application/json", makeJsonMessage("Data tidak diizinkan"));
+  
+      if (isWifiScanRunning()) {
+        request->send(200, "application/json",
+          "{\"status\":\"scanning\"}");
+        return;
+      }
+  
+      String json;
+      serializeJson(getWifiScanResult(), json);
+      request->send(200, "application/json", json);
+      resetWifiScan();
       return;
-    }
-
-
-    JsonDocument docDB;
-
-    if (!loadJsonFromFile("/database.json", docDB)) {
-      request->send(500, "application/json", makeJsonMessage("Gagal membaca database"));
-      return;
-    }
-    
-
-    docDB["settings"][key] = value;
-
-    File file = LittleFS.open("/database.json", "w");
-    if (!file) {
-      request->send(500, "application/json", makeJsonMessage("Gagal menulis file"));
-      return;
-    }
-    serializeJsonPretty(docDB, file);
-    file.close();
-    broadcast("settings-updated", docDB["settings"]);
-
-    request->send(200, "application/json", makeJsonMessage("Data berhasil disimpan"));
   });
-
-  server.addHandler(handlerSetSettings);
 }
 
+void handlerSetSetting() {
+  server.addHandler(
+    new AsyncCallbackJsonWebHandler("/api/settings/save",
+      [](AsyncWebServerRequest *request, JsonVariant &json) {
 
-void scanNetworkAvailable() {
-  server.on("/scan-network", HTTP_GET, [](AsyncWebServerRequest *request){
-    JsonArray networks = scanNetworks();
+        if (!json.is<JsonObject>()) {
+          request->send(400, "application/json", makeJsonMessage("Invalid JSON"));
+          return;
+        }
 
-    String json;
-    serializeJson(networks, json);
+        JsonObject req = json.as<JsonObject>();
 
-    request->send(200, "application/json", json);
-  });
+        // Load database
+        if (!LittleFS.exists("/database.json")) {
+          request->send(500, "application/json", makeJsonMessage("Database not found"));
+          return;
+        }
+
+        JsonDocument doc;
+        if (!loadJsonFromFile("/database.json", doc)) {
+          request->send(500, "application/json", makeJsonMessage("Failed to read database"));
+          return;
+        }
+
+        JsonObject settings = doc["settings"].to<JsonObject>();
+
+        // Assign values (safe)
+        settings["ssidAp"]     = getString(req, "ssidAp");
+        settings["passwordAp"] = getString(req, "passwordAp");
+        settings["ssid"]       = getString(req, "ssid");
+        settings["password"]   = getString(req, "password");
+        settings["static_ip"]  = getString(req, "static_ip");
+        settings["gateway"]    = getString(req, "gateway");
+        settings["subnet"]     = getString(req, "subnet");
+        settings["dns1"]       = getString(req, "dns1");
+        settings["dns2"]       = getString(req, "dns2");
+        settings["dhcp"]       = getBool(req, "dhcp", true);
+
+        File file = LittleFS.open("/database.json", "w");
+        if (!file) {
+          request->send(500, "application/json", makeJsonMessage("Write failed"));
+          return;
+        }
+
+        serializeJson(doc, file);
+        file.close();
+
+        // String settingsStr;
+        // serializeJson(doc, settingsStr);
+        // LOG_INFO("Settings saved: %s", settingsStr.c_str());
+
+
+        broadcast("settings:data", settings);
+        request->send(200, "application/json", makeJsonMessage("Settings saved"));
+      }
+    )
+  );
 }

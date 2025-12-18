@@ -5,6 +5,6 @@
 
 
 void initHandlers() {
-  handlerRoom();
+  handlerRooms();
   handlerSettings();
 }

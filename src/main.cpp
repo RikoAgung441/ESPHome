@@ -65,11 +65,13 @@ void setup() {
 void loop() {
   dnsServer.processNextRequest();
 
-  if (millis() - lastMillis > 2000) {
-    broadcastPzemData();
+  handleWifiScanLoop(); 
 
-    lastMillis = millis();
-  }
+  // if (millis() - lastMillis > 2000) {
+  //   broadcastPzemData();
+
+  //   lastMillis = millis();
+  // }
 
 
 

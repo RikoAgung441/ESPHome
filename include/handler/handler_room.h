@@ -2,5 +2,5 @@
 #include <Arduino.h>
 
 void handlerRooms();
-void handlerRoom();
+void getRooms();
 void hanlderSetChannels();
