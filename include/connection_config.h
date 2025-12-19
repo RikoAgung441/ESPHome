@@ -2,14 +2,6 @@
 #include <Arduino.h>
 #include <DNSServer.h>
 
-// enum class WifiScanState {
-//   IDLE,
-//   SCANNING,
-//   READY
-// };
-
-// WifiScanState scanState = WifiScanState::IDLE;
-
 
 void connectionInit();
 void startWifiScan();

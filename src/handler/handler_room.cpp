@@ -237,6 +237,10 @@ void hanlderSetChannels(){
     serializeJson(docDatabase, file);
     file.close();
 
+    String Sout;
+    serializeJsonPretty(docDatabase, Sout);
+    LOG_INFO("Updated database.json:\n%s\n", Sout.c_str());
+
     JsonDocument docOutput;
     JsonArray docChannels = docDatabase["channels"].as<JsonArray>();
     JsonArray filteredChannels = docOutput.to<JsonArray>();
@@ -252,6 +256,263 @@ void hanlderSetChannels(){
     request->send(200, "application/json", makeJsonMessage("Data berhasil disimpan")); 
   });
   server.addHandler(handlerUpdateChannel);
+
+
+  server.addHandler(
+    new AsyncCallbackJsonWebHandler("/api/rooms/create",
+      [](AsyncWebServerRequest *request, JsonVariant &json) {
+        if (!json.is<JsonObject>()) {
+          request->send(400, "application/json", makeJsonMessage("Invalid JSON"));
+          return;
+        }
+        JsonObject reqObj = json.as<JsonObject>();
+        String reqName = reqObj["name"];
+        String reqIcon = reqObj["icon"];
+        JsonArray reqChannels = reqObj["channels"].as<JsonArray>();
+
+        if (!LittleFS.exists("/database.json")) {
+          request->send(500, "application/json", makeJsonMessage("Database not found"));
+          return;
+        }
+
+        JsonDocument docDatabase;
+        if (!loadJsonFromFile("/database.json", docDatabase)) {
+          request->send(500, "application/json", makeJsonMessage("Failed to read database"));
+          return;
+        }
+
+        JsonArray rooms = docDatabase["rooms"].as<JsonArray>();
+        JsonArray channels = docDatabase["channels"].as<JsonArray>();
+
+        if (rooms.size() == 0) {
+          request->send(500, "application/json", makeJsonMessage("Rooms data not found in database.json"));
+          return;
+        }
+        
+        String newRoomId = generateId();
+        newRoomId .reserve(16);
+
+        for (JsonObject room : rooms) {
+          String name = room["name"];
+          if (name == reqName) {
+            request->send(400, "application/json", makeJsonMessage("Room name already exists"));
+            return;
+          }
+
+          String roomId = room["id"];
+          if (roomId == newRoomId) {
+            newRoomId = generateId();
+            return;
+          }
+        }
+
+        JsonObject newRoom = rooms.add<JsonObject>();
+        newRoom["id"] = newRoomId;
+        newRoom["name"] = reqName;
+        newRoom["icon"] = reqIcon;
+
+      if(!reqChannels.isNull()) {       
+        LOG_INFO("Assigning channels to new room\n");  
+          for (JsonVariant channelIdVar : reqChannels) {
+            String channelId = channelIdVar["id"].as<String>();
+            if (channelId.isEmpty()) continue;
+
+            for (JsonObject channel : channels) {
+              String id = channel["id"];
+              if (id == channelId) {
+                channel["roomId"] = String(newRoomId);
+                break;
+              }
+            }
+          }
+        }
+
+        File file = LittleFS.open("/database.json", "w");
+        if (!file) {
+          request->send(500, "application/json", makeJsonMessage("Gagal menulis file"));
+          return;
+        }
+        serializeJson(docDatabase, file);
+        file.close();
+
+        for (JsonObject room : rooms) {
+          String roomId = room["id"];
+          int channelCount = 0;
+          for(JsonObject channel : channels) {
+            if(channel["roomId"] == roomId){
+              channelCount++;
+            }
+          }
+          room["channelCount"] = channelCount;
+        }
+
+        broadcast("rooms:data", rooms);
+
+        request->send(200, "application/json", makeJsonMessage("Room created successfully"));
+      }
+    )
+  );
+
+  server.addHandler(
+    new AsyncCallbackJsonWebHandler("/api/rooms/delete",
+      [](AsyncWebServerRequest *request, JsonVariant &json) {
+        if (!json.is<JsonObject>()) {
+          request->send(400, "application/json", makeJsonMessage("Invalid JSON"));
+          return;
+        }
+        JsonObject reqObj = json.as<JsonObject>();
+
+        String reqId = reqObj["id"];
+
+        if (!LittleFS.exists("/database.json")) {
+          request->send(500, "application/json", makeJsonMessage("Database not found"));
+          return;
+        }
+
+        JsonDocument docDatabase;
+        if (!loadJsonFromFile("/database.json", docDatabase)) {
+          request->send(500, "application/json", makeJsonMessage("Failed to read database"));
+          return;
+        }
+
+        JsonArray rooms = docDatabase["rooms"].as<JsonArray>();
+        JsonArray channels = docDatabase["channels"].as<JsonArray>();
+
+        if (rooms.size() == 0) {
+          request->send(500, "application/json", makeJsonMessage("Rooms data not found in database.json"));
+          return;
+        }
+
+
+        for(JsonObject room : rooms) {
+          String roomId = room["id"];
+          if (roomId == reqId) {
+            rooms.remove(room);
+            break;
+          }
+        }
+
+        for (JsonObject channel : channels) {
+          String channelRoomId = channel["roomId"];
+          if (channelRoomId == reqId) {
+            channel["roomId"] = "";
+          }
+        }
+
+        File file = LittleFS.open("/database.json", "w");
+        if (!file) {
+          request->send(500, "application/json", makeJsonMessage("Gagal menulis file"));
+          return;
+        }
+        serializeJson(docDatabase, file);
+        file.close();
+
+
+        for (JsonObject room : rooms) {
+          String roomId = room["id"];
+          int channelCount = 0;
+          for(JsonObject channel : channels) {
+            if(channel["roomId"] == roomId){
+              channelCount++;
+            }
+          }
+          room["channelCount"] = channelCount;
+        }
+
+        broadcast("rooms:data", rooms);
+
+        request->send(200, "application/json", makeJsonMessage("Room deleted successfully"));
+      }
+    )
+  );
+
+
+  server.addHandler(
+    new AsyncCallbackJsonWebHandler("/api/rooms/update",[](AsyncWebServerRequest *request, JsonVariant &json) {
+      if (!json.is<JsonObject>()) {
+        request->send(400, "application/json",
+                      makeJsonMessage("Invalid JSON"));
+        return;
+      }
+
+      JsonObject req = json.as<JsonObject>();
+
+      const char* reqId   = req["id"]   | "";
+      const char* reqName = req["name"] | "";
+      const char* reqIcon = req["icon"] | "";
+
+      JsonArray reqChannels = req["channels"].as<JsonArray>();
+
+      if (!LittleFS.exists("/database.json")) {
+        request->send(500, "application/json",makeJsonMessage("Database not found"));
+        return;
+      }
+
+      // 🔹 Pakai StaticJsonDocument (sesuaikan ukuran!)
+      JsonDocument docDatabase;
+
+      if (!loadJsonFromFile("/database.json", docDatabase)) {
+        request->send(500, "application/json",makeJsonMessage("Failed to read database"));
+        return;
+      }
+
+      JsonArray rooms    = docDatabase["rooms"].as<JsonArray>();
+      JsonArray channels = docDatabase["channels"].as<JsonArray>();
+
+      if (rooms.isNull()) {
+        request->send(500, "application/json",makeJsonMessage("Rooms data not found"));
+        return;
+      }
+
+      for (JsonObject room : rooms) {
+        const char* id = room["id"];
+        if (id && strcmp(id, reqId) == 0) {
+          LOG_INFO("Updating room %s", id);
+          room["name"] = reqName;
+          room["icon"] = reqIcon;
+          break;
+        }
+      }
+
+
+      for (JsonVariant reqChanel : reqChannels) {
+        const char* reqChannelId = reqChanel["id"].as<const char*>();
+        if (!reqChannelId) continue;
+
+        for (JsonObject channel : channels) {
+          const char* id = channel["id"];
+          if (id && strcmp(id, reqChannelId) == 0) {
+            channel["roomId"] = reqId;
+            break;
+          }
+        }
+      }
+
+      File file = LittleFS.open("/database.json", "w");
+      if (!file) {
+        request->send(500, "application/json",makeJsonMessage("Write failed"));
+        return;
+      }
+
+      serializeJson(docDatabase, file);
+      file.close();
+
+      for (JsonObject room : rooms) {
+        String roomId = room["id"];
+        int channelCount = 0;
+        for(JsonObject channel : channels) {
+          if(channel["roomId"] == roomId){
+            channelCount++;
+          }
+        }
+        room["channelCount"] = channelCount;
+      }
+
+      broadcast("rooms:data", rooms);
+
+      request->send(200, "application/json",makeJsonMessage("Room updated successfully"));
+    })
+  );
 }
 
 

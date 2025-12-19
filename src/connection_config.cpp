@@ -166,8 +166,8 @@ void handleWifiScanLoop() {
     JsonObject net = arr.add<JsonObject>();
     net["ssid"] = WiFi.SSID(i);
     net["strength"] = WiFi.RSSI(i);
-    net["encryption"] =
-      (WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? "open" : "secured";
+    net["encrypted"] =
+      (WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? false : true;
   }
 
   WiFi.scanDelete();

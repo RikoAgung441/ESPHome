@@ -34,7 +34,12 @@ void handlerSetting(){
       return;
     }
 
+    JsonObject DBSettings = docSettings["settings"].as<JsonObject>();
+    // JsonObject DBConfig = docSettings["config"].as<JsonObject>();
+    // DBConfig["token"] = generateRandomToken(16);
+
     JsonObject settingObj = docSettings["settings"].as<JsonObject>();
+    settingObj["token"] = generateRandomToken(16);
 
     client->text(makeJsonDataWS("settings:data", settingObj) );
   });
@@ -89,7 +94,6 @@ void handlerSetSetting() {
 
         JsonObject settings = doc["settings"].to<JsonObject>();
 
-        // Assign values (safe)
         settings["ssidAp"]     = getString(req, "ssidAp");
         settings["passwordAp"] = getString(req, "passwordAp");
         settings["ssid"]       = getString(req, "ssid");
@@ -110,13 +114,115 @@ void handlerSetSetting() {
         serializeJson(doc, file);
         file.close();
 
-        // String settingsStr;
-        // serializeJson(doc, settingsStr);
-        // LOG_INFO("Settings saved: %s", settingsStr.c_str());
 
 
         broadcast("settings:data", settings);
         request->send(200, "application/json", makeJsonMessage("Settings saved"));
+      }
+    )
+  );
+
+  server.addHandler(
+    new AsyncCallbackJsonWebHandler("/api/settings/restart",
+      [](AsyncWebServerRequest *request, JsonVariant &json) {
+        if (!json.is<JsonObject>()) {
+          request->send(400, "application/json", makeJsonMessage("Invalid JSON"));
+          return;
+        }
+        String token = getString(json.as<JsonObject>(), "token");
+
+        if (!LittleFS.exists("/database.json")) {
+          request->send(500, "application/json", makeJsonMessage("Database not found"));
+          return;
+        }
+
+        JsonDocument docDatabase;
+        if (!loadJsonFromFile("/database.json", docDatabase)) {
+          request->send(500, "application/json", makeJsonMessage("Failed to read database"));
+          return;
+        }
+
+        JsonObject DBConfig = docDatabase["config"].as<JsonObject>();
+
+        if (token != DBConfig["token"].as<String>()) {
+          request->send(403, "application/json", makeJsonMessage("Invalid token"));
+          return;
+        }
+
+        LOG_INFO("Restarting device as requested via API");
+
+        request->send(200, "application/json", makeJsonMessage("Device restarting"));
+        delay(1000);
+        ESP.restart();
+      }
+    )
+  );
+
+  server.addHandler(
+    new AsyncCallbackJsonWebHandler("/api/settings/reset",
+      [](AsyncWebServerRequest *request, JsonVariant &json) {
+        if (!json.is<JsonObject>()) {
+          request->send(400, "application/json", makeJsonMessage("Invalid JSON"));
+          return;
+        }
+        String token = getString(json.as<JsonObject>(), "token");
+        LOG_INFO("Factory reset requested via API");
+
+        if (!LittleFS.exists("/database.json")) {
+          request->send(500, "application/json", makeJsonMessage("Database not found"));
+          return;
+        }
+
+        JsonDocument docDatabase;
+        if (!loadJsonFromFile("/database.json", docDatabase)) {
+          request->send(500, "application/json", makeJsonMessage("Failed to read database"));
+          return;
+        }
+        
+        JsonObject DBConfig = docDatabase["config"].as<JsonObject>();
+        JsonObject DBDefaultSettings = docDatabase["defaultSettings"].as<JsonObject>();
+        JsonObject DBSettings = docDatabase["settings"].to<JsonObject>();
+      
+        String SOutToken;
+        serializeJson(DBConfig["token"], SOutToken);
+        LOG_INFO("db Token: %s", SOutToken.c_str());
+        LOG_INFO("Provided Token: %s", token.c_str());
+
+
+        if (token != DBConfig["token"].as<String>()) {
+          request->send(403, "application/json", makeJsonMessage("Invalid token"));
+          return;
+        }
+        LOG_INFO("Token valid, performing factory reset");
+        // DBSettings = DBDefaultSettings;
+        for (JsonPair kvp : DBDefaultSettings) {
+          DBSettings[kvp.key()] = kvp.value();
+        }
+
+        File file = LittleFS.open("/database.json", "w");
+        if (!file) {
+          request->send(500, "application/json", makeJsonMessage("Write failed"));
+          return;
+        }
+
+        serializeJson(docDatabase, file);
+        file.close();
+
+        LOG_INFO("Reseting Settings to factory defaults as requested via API");
+
+        String SOut;
+        serializeJsonPretty(DBSettings, SOut);
+        LOG_INFO("New Settings: %s", SOut.c_str());
+
+        SOut = "";
+        serializeJsonPretty(docDatabase, SOut);
+        LOG_INFO("Database after reset: %s", SOut.c_str());
+
+        // broadcast("settings:data", DBSettings);
+
+        request->send(200, "application/json", makeJsonMessage("Factory reset performed, device restarting"));
+        delay(1000);
+        ESP.restart();
       }
     )
   );

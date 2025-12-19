@@ -12,5 +12,6 @@ String makeJsonDataWS(const char* event, JsonVariant data);
 String makeJsonMessage(const char* msg);
 String getString(JsonObject obj, const char* key);
 bool getBool(JsonObject obj, const char* key, bool def = true);
-void generateToken(size_t length);
+String generateRandomToken(size_t length);
+String generateId();
 

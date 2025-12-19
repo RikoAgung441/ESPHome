@@ -88,7 +88,7 @@
     }
   ],
   "settings": {
-    "ssidAp": "ESP32",
+    "ssidAp": "ESP32 testttttttt",
     "passwordAp": "12345678",
     "ssid": "Fuz_pc",
     "password": "MahfuZ56",
@@ -102,8 +102,8 @@
   "defaultSettings": {
     "ssidAp": "ESP32",
     "passwordAp": "12345678",
-    "ssid": "",
-    "password": "",
+    "ssid": "Fuz_pc",
+    "password": "MahfuZ56",
     "static_ip": "",
     "gateway": "",
     "subnet": "255.255.255.0",

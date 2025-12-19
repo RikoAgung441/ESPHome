@@ -25,11 +25,13 @@ void webServerInit(){
   server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
 
 
-  server.on("/hello", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send(200, "text/plain", "Hello, World!"); });
+  server.on("/hello", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(200, "text/plain", "Hello, World!"); 
+  });
 
-  server.onNotFound([](AsyncWebServerRequest *request)
-                    { request->send(404, "text/plain", "404: Not found"); });
+  server.onNotFound([](AsyncWebServerRequest *request) {
+    request->send(LittleFS, "/index.html", "text/html");
+  });
 
   server.begin();
   LOG_INFO("Web server started!");
