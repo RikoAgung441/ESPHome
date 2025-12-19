@@ -1,11 +1,6 @@
-#ifndef HANDLER_H
-#define HANDLER_H
-/* code */
-
+#pragma once
 #include <Arduino.h>
 
-
+void initHandlers();
 void handlerSetSettings();
 void handlerSwitchChannel();
-
-#endif //HANDLER_H

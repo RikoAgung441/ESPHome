@@ -1,18 +1,20 @@
 #include <Arduino.h>
 #include <WiFi.h>
-#include <server_manager.h>
+#include <server/server_manager.h>
 #include <connection_config.h>
 #include <LittleFS.h>
-#include <web_sockets.h>
+#include <server/web_sockets.h>
 #include <spiff_manager.h>
 #include <pins_config.h>
 #include <pzem_config.h>
+#include <handler/handler.h>
 
 volatile bool buttonInterrupt = false;
 unsigned long buttonPressTime = 0;
 bool buttonHeld = false;
 bool pendingRestart = false;
 unsigned long restartAt = 0;
+unsigned long lastMillis = 0;
 
 // ====== INTERRUPT ======
 void IRAM_ATTR handleButton() {
@@ -55,6 +57,7 @@ void setup() {
   connectionInit();
   webServerInit();
   initWebSocket(server);
+  initHandlers();
 }
 
 
@@ -62,30 +65,42 @@ void setup() {
 void loop() {
   dnsServer.processNextRequest();
 
-  broadcastPzemData();
+  handleWifiScanLoop(); 
 
-  if (buttonHeld && (millis() - buttonPressTime > 5000)) {
-    buttonHeld = false;
-    resetToDefault();
-  }
+  // if (millis() - lastMillis > 2000) {
+  //   broadcastPzemData();
 
-    if (pendingRestart && millis() > restartAt) {
-    pendingRestart = false;
-    restartAt = 0;
-    Serial.println("🔄 Restarting AP dengan SSID baru...");
+  //   lastMillis = millis();
+  // }
 
-    WiFi.softAPdisconnect(true);
-    delay(300);
-    WiFi.softAP(ap_ssid.c_str(), ap_password.c_str());
 
-    Serial.print("✅ AP Baru Aktif: "); Serial.println(ap_ssid);
-    Serial.print("IP: "); Serial.println(WiFi.softAPIP());
-    startAPMode();
-  }
-}
+
+  // reset ke default jika tombol ditekan lebih dari 5 detik
+
+  // if (buttonHeld && (millis() - buttonPressTime > 5000)) {
+  //   buttonHeld = false;
+  //   resetToDefault();
+  // }
+
+  // -----------------------------
+
+//     if (pendingRestart && millis() > restartAt) {
+//     pendingRestart = false;
+//     restartAt = 0;
+//     Serial.println("🔄 Restarting AP dengan SSID baru...");
+
+//     WiFi.softAPdisconnect(true);
+//     delay(300);
+//     WiFi.softAP(ap_ssid.c_str(), ap_password.c_str());
+
+//     Serial.print("✅ AP Baru Aktif: "); Serial.println(ap_ssid);
+//     Serial.print("IP: "); Serial.println(WiFi.softAPIP());
+//     startAPMode();
+//   }
+// }
 
 // void relayControl(int relayIndex, bool state) {
 //   if (relayIndex < 1 || relayIndex > 4) return; // Validasi index
 //     digitalWrite(relayPin[relayIndex-1], state ? HIGH : LOW);
 //     Serial.printf("Relay %d %s\n", relayIndex, state ? "ON" : "OFF");
-// }
+}

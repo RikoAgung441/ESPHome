@@ -3,65 +3,118 @@
     {
       "id": "1",
       "name": "Living Room",
-      "channels": [
-        {
-          "id": 1,
-          "name": "Channel 1",
-          "status": true,
-          "room": 1,
-          "pin": 2
-        },
-        {
-          "id": 2,
-          "name": "Channel 2",
-          "status": true,
-          "room": 1,
-          "pin": 4
-        }
-      ]
+      "icon": "Sofa"
     },
     {
       "id": "2",
-      "name": "Kitchen",
-      "channels": [
-        {
-          "id": 1,
-          "name": "Channel 1",
-          "status": false,
-          "room": 2,
-          "pin": 5
-        }
-      ]
+      "name": "Bedroom",
+      "icon": "Bed"
     },
     {
       "id": "3",
-      "name": "Bedroom",
-      "channels": [
-        {
-          "id": 1,
-          "name": "Channel 1",
-          "status": true,
-          "room": 3,
-          "pin": 18
-        }
-      ]
+      "name": "Kitchen",
+      "icon": "ChefHat"
     },
     {
       "id": "4",
       "name": "Bathroom",
-      "channels": [
-        {
-          "id": 1,
-          "name": "Channel 1",
-          "status": false,
-          "room": 4,
-          "pin": 19
-        }
-      ]
+      "icon": "Bath"
+    }
+  ],
+  "channels": [
+    {
+      "id": "1",
+      "name": "Main Light",
+      "isOn": true,
+      "icon": "Lightbulb",
+      "roomId": "1",
+      "pin": 2
+    },
+    {
+      "id": "2",
+      "name": "Ceiling Fan",
+      "isOn": true,
+      "icon": "Fan",
+      "roomId": "1",
+      "pin": 4
+    },
+    {
+      "id": "3",
+      "name": "Overhead Light",
+      "isOn": false,
+      "icon": "Lightbulb",
+      "roomId": "2",
+      "pin": 5
+    },
+    {
+      "id": "4",
+      "name": "Bedside Lamp",
+      "isOn": true,
+      "icon": "Lamp",
+      "roomId": "2",
+      "pin": 18
+    },
+    {
+      "id": "5",
+      "name": "Shower Light",
+      "isOn": false,
+      "icon": "Lightbulb",
+      "roomId": "",
+      "pin": 19
+    },
+    {
+      "id": "6",
+      "name": "Bathroom Fan",
+      "isOn": false,
+      "icon": "Fan",
+      "roomId": "3",
+      "pin": 21
+    },
+    {
+      "id": "7",
+      "name": "Kitchen Light",
+      "isOn": true,
+      "icon": "Lightbulb",
+      "roomId": "",
+      "pin": 22
+    },
+    {
+      "id": "8",
+      "name": "Exhaust Fan",
+      "isOn": false,
+      "icon": "Fan",
+      "roomId": "",
+      "pin": 23
     }
   ],
   "settings": {
-    "ssid": "MyWiFi",
-    "password": "11223344"
+    "ssidAp": "ESP32 testttttttt",
+    "passwordAp": "12345678",
+    "ssid": "Fuz_pc",
+    "password": "MahfuZ56",
+    "static_ip": "",
+    "gateway": "",
+    "subnet": "255.255.255.0",
+    "dns1": "8.8.8.8",
+    "dns2": "8.8.4.4",
+    "dhcp": true
+  },
+  "defaultSettings": {
+    "ssidAp": "ESP32",
+    "passwordAp": "12345678",
+    "ssid": "Fuz_pc",
+    "password": "MahfuZ56",
+    "static_ip": "",
+    "gateway": "",
+    "subnet": "255.255.255.0",
+    "dns1": "8.8.8.8",
+    "dns2": "8.8.4.4",
+    "dhcp": true
+  },
+  "config": {
+    "idEsp": "",
+    "token": "",
+    "port": 80,
+    "ws_port": 8080
   }
 }

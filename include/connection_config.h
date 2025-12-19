@@ -1,17 +1,16 @@
-#ifndef CONNECTION_CONFIG
-#define CONNECTION_CONFIG
-
+#pragma once
 #include <Arduino.h>
 #include <DNSServer.h>
 
 
 void connectionInit();
-void startAPMode();
-void resetToDefault();
-// void handleSave();
-String wifiManagerGetIP();
+void startWifiScan();
+bool isWifiScanRunning();
+bool isWifiScanReady();
+JsonArray getWifiScanResult();
+void handleWifiScanLoop();
+void resetWifiScan();
 
 extern String ap_ssid, ap_password;
 extern DNSServer dnsServer;
 
-#endif //CONNECTION_CONFIG
