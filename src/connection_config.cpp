@@ -17,110 +17,115 @@ bool scanReady = false;
 
 
 void connectionInit() {
-  // WiFi.mode(WIFI_AP_STA);
-  // WiFi.begin("Fuz_pc", "MahfuZ56");
+  IPAddress StaticIP(192, 168, 110, 101);
+  IPAddress Gateway(192, 168, 110, 1);
+  IPAddress Subnet(255, 255, 255, 0);
+  IPAddress Dns1(8, 8, 8, 8);
+  WiFi.mode(WIFI_AP_STA);
+  WiFi.config(StaticIP, Gateway, Subnet, Dns1);
+  WiFi.begin("WiFi error", "ojonyambung");
 
-  // while (WiFi.status() != WL_CONNECTED) {
-  //   delay(500);
-  //   Serial.print(".");
-  // }
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
 
-  // Serial.println("\nWiFi terhubung!");
-  // Serial.print("IP Address ESP32: ");
-  // Serial.println(WiFi.localIP());
+  Serial.println("\nWiFi terhubung!");
+  Serial.print("IP Address ESP32: ");
+  Serial.println(WiFi.localIP());
 
   // ketika di database tidak ada ssid dan password mode wifi pakai AP ambil dari database.json
 
-  ap_ssid = "ESP32";
-  ap_password = "12345678";
-  IPAddress apIP(192, 168, 4, 10);
-  IPAddress apGateway(192, 168, 4, 1);
-  IPAddress apSubnet(255, 255, 255, 0);
-  IPAddress ip, gateway, subnet, dns1, dns2;
+//   ap_ssid = "ESP32";
+//   ap_password = "12345678";
+//   IPAddress apIP(192, 168, 4, 10);
+//   IPAddress apGateway(192, 168, 4, 1);
+//   IPAddress apSubnet(255, 255, 255, 0);
+//   IPAddress ip, gateway, subnet, dns1, dns2;
 
-  WiFi.softAPConfig(apIP, apGateway, apSubnet);
+//   WiFi.softAPConfig(apIP, apGateway, apSubnet);
 
 
-  if (!LittleFS.exists("/database.json")) {
-    LOG_ERROR("File database.json tidak ditemukan");
-    return;
-  }
+//   if (!LittleFS.exists("/database.json")) {
+//     LOG_ERROR("File database.json tidak ditemukan");
+//     return;
+//   }
 
-  JsonDocument docSettings;
+//   JsonDocument docSettings;
 
-  if (!loadJsonFromFile("/database.json", docSettings)) {
-    LOG_ERROR("Gagal membaca database.json");
-    return;
-  }
+//   if (!loadJsonFromFile("/database.json", docSettings)) {
+//     LOG_ERROR("Gagal membaca database.json");
+//     return;
+//   }
 
-  JsonObject settingObj = docSettings["settings"].as<JsonObject>();
-  String ssidAp = settingObj["ssidAp"].as<String>();
-  String passwordAp = settingObj["passwordAp"].as<String>();
-  String ssid = settingObj["ssid"].as<String>();
-  String password = settingObj["password"].as<String>();
-  const char* static_ip_str = settingObj["static_ip"];
-  const char* gateway_str = settingObj["gateway"];
-  const char* subnet_str = settingObj["subnet"];
-  const char* dns1_str = settingObj["dns1"];
-  const char* dns2_str = settingObj["dns2"];
+//   JsonObject settingObj = docSettings["settings"].as<JsonObject>();
+//   String ssidAp = settingObj["ssidAp"].as<String>();
+//   String passwordAp = settingObj["passwordAp"].as<String>();
+//   String ssid = settingObj["ssid"].as<String>();
+//   String password = settingObj["password"].as<String>();
+//   const char* static_ip_str = settingObj["static_ip"];
+//   const char* gateway_str = settingObj["gateway"];
+//   const char* subnet_str = settingObj["subnet"];
+//   const char* dns1_str = settingObj["dns1"];
+//   const char* dns2_str = settingObj["dns2"];
 
   
-if (!ip.fromString(static_ip_str)) {
-  Serial.println("IP address tidak valid");
-}
+// if (!ip.fromString(static_ip_str)) {
+//   Serial.println("IP address tidak valid");
+// }
 
-if (!gateway.fromString(gateway_str)) {
-  Serial.println("Gateway tidak valid");
-}
+// if (!gateway.fromString(gateway_str)) {
+//   Serial.println("Gateway tidak valid");
+// }
 
-if (!subnet.fromString(subnet_str)) {
-  Serial.println("Subnet tidak valid");
-}
+// if (!subnet.fromString(subnet_str)) {
+//   Serial.println("Subnet tidak valid");
+// }
 
-if (!dns1.fromString(dns1_str)) {
-  Serial.println("DNS1 tidak valid");
-}
+// if (!dns1.fromString(dns1_str)) {
+//   Serial.println("DNS1 tidak valid");
+// }
 
-if (!dns2.fromString(dns2_str)) {
-  Serial.println("DNS2 tidak valid");
-}
+// if (!dns2.fromString(dns2_str)) {
+//   Serial.println("DNS2 tidak valid");
+// }
 
 
   // if (!settingObj["static_ip"].as<String>().isEmpty()) {
   //   WiFi.config(static_ip, gateway, subnet, dns1, dns2);
   // }
 
-  if(ssid.isEmpty() || password.isEmpty()) {
-    WiFi.mode(WIFI_AP);
-    WiFi.softAP(ap_ssid.c_str(), ap_password.c_str());
-  } else if ( ssidAp.isEmpty() || passwordAp.isEmpty() && !ssid.isEmpty() && !password.isEmpty() ) {
-    WiFi.mode(WIFI_STA);
-    WiFi.begin(ssid.c_str(), password.c_str());
-    while (WiFi.status() != WL_CONNECTED) {
-      delay(500);
-      Serial.print(".");
-    }
+  // if(ssid.isEmpty() || password.isEmpty()) {
+  //   WiFi.mode(WIFI_AP);
+  //   WiFi.softAP(ap_ssid.c_str(), ap_password.c_str());
+  // } else if ( ssidAp.isEmpty() || passwordAp.isEmpty() && !ssid.isEmpty() && !password.isEmpty() ) {
+  //   WiFi.mode(WIFI_STA);
+  //   WiFi.begin(ssid.c_str(), password.c_str());
+  //   while (WiFi.status() != WL_CONNECTED) {
+  //     delay(500);
+  //     Serial.print(".");
+  //   }
 
-    Serial.println("\nWiFi terhubung!");
-    Serial.print("IP Address ESP32: ");
-    Serial.println(WiFi.localIP());
-  } else{
-    WiFi.mode(WIFI_AP_STA);
-    WiFi.begin(ssid.c_str(), password.c_str());
-    WiFi.softAP(ssidAp.c_str(), passwordAp.c_str());
-    while (WiFi.status() != WL_CONNECTED) {
-      delay(500);
-      Serial.print(".");
-    }
-    Serial.println("\nWiFi terhubung!");
-    Serial.print("IP Address ESP32: ");
-    Serial.println(WiFi.localIP());
+  //   Serial.println("\nWiFi terhubung!");
+  //   Serial.print("IP Address ESP32: ");
+  //   Serial.println(WiFi.localIP());
+  // } else{
+  //   WiFi.mode(WIFI_AP_STA);
+  //   WiFi.begin(ssid.c_str(), password.c_str());
+  //   WiFi.softAP(ssidAp.c_str(), passwordAp.c_str());
+  //   while (WiFi.status() != WL_CONNECTED) {
+  //     delay(500);
+  //     Serial.print(".");
+  //   }
+  //   Serial.println("\nWiFi terhubung!");
+  //   Serial.print("IP Address ESP32: ");
+  //   Serial.println(WiFi.localIP());
 
-    Serial.print("AP IP Address ESP32: ");
-    Serial.println(WiFi.softAPIP());
-  }
+  //   Serial.print("AP IP Address ESP32: ");
+  //   Serial.println(WiFi.softAPIP());
+  // }
 
-  LOG_INFO("Starting AP with SSID: %s", ap_ssid.c_str());
+  // LOG_INFO("Starting AP with SSID: %s", ap_ssid.c_str());
 
 
   dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());

@@ -384,10 +384,13 @@ void hanlderSetChannels(){
         }
 
 
-        for(JsonObject room : rooms) {
+        for(int i = 0 ; i <= rooms.size(); i++) {
+          JsonObject room = rooms[i];
           String roomId = room["id"];
           if (roomId == reqId) {
-            rooms.remove(room);
+            LOG_INFO("id Room dar luar %s\n", reqId.c_str());
+            LOG_INFO("id Room dari database %s\n", roomId.c_str());
+            rooms.remove(i);
             break;
           }
         }

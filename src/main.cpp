@@ -43,7 +43,7 @@ void setup() {
   pinMode(LED_PIN, OUTPUT);
   pinMode(BUTTON_PIN, INPUT_PULLUP);
 
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 8; i++) {
     pinMode(relayPin[i], OUTPUT);
     digitalWrite(relayPin[i], LOW); // Matikan semua relay saat start
   }

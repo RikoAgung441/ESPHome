@@ -28,7 +28,7 @@
       "isOn": true,
       "icon": "Lightbulb",
       "roomId": "1",
-      "pin": 2
+      "pin": 13
     },
     {
       "id": "2",
@@ -36,7 +36,7 @@
       "isOn": true,
       "icon": "Fan",
       "roomId": "1",
-      "pin": 4
+      "pin": 14
     },
     {
       "id": "3",
@@ -44,7 +44,7 @@
       "isOn": false,
       "icon": "Lightbulb",
       "roomId": "2",
-      "pin": 5
+      "pin": 25
     },
     {
       "id": "4",
@@ -52,7 +52,7 @@
       "isOn": true,
       "icon": "Lamp",
       "roomId": "2",
-      "pin": 18
+      "pin": 26
     },
     {
       "id": "5",
@@ -60,7 +60,7 @@
       "isOn": false,
       "icon": "Lightbulb",
       "roomId": "",
-      "pin": 19
+      "pin": 21
     },
     {
       "id": "6",
@@ -68,7 +68,7 @@
       "isOn": false,
       "icon": "Fan",
       "roomId": "3",
-      "pin": 21
+      "pin": 22
     },
     {
       "id": "7",
@@ -76,7 +76,7 @@
       "isOn": true,
       "icon": "Lightbulb",
       "roomId": "",
-      "pin": 22
+      "pin": 32
     },
     {
       "id": "8",
@@ -84,7 +84,7 @@
       "isOn": false,
       "icon": "Fan",
       "roomId": "",
-      "pin": 23
+      "pin": 33
     }
   ],
   "settings": {
